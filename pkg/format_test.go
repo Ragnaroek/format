@@ -8,52 +8,58 @@ import (
 
 func TestParseFormatGraph(t *testing.T) {
 	tcs := []struct {
-		format              string
-		expectedFormatGraph root
+		format            string
+		expectedTokens    []ftoken
+		expectedRepeation []repeatDef
 	}{
 		{
-			"string only",
-			buildGraph([]ftoken{NewLiteral("string only")}),
+			format:         "string only",
+			expectedTokens: []ftoken{NewLiteral("string only")},
 		},
 		{
-			"~a",
-			buildGraph([]ftoken{&directive{char: rune('a')}}),
+			format:         "~a",
+			expectedTokens: []ftoken{&directive{char: rune('a')}},
 		},
 		{
-			"~:a",
-			buildGraph([]ftoken{&directive{char: rune('a'), colonMod: true}}),
+			format:         "~:a",
+			expectedTokens: []ftoken{&directive{char: rune('a'), colonMod: true}},
 		},
 		{
-			"~:@a",
-			buildGraph([]ftoken{&directive{char: rune('a'), colonMod: true, atMod: true}}),
+			format:         "~:@a",
+			expectedTokens: []ftoken{&directive{char: rune('a'), colonMod: true, atMod: true}},
 		},
 		{
-			"~@:a",
-			buildGraph([]ftoken{&directive{char: rune('a'), colonMod: true, atMod: true}}),
+			format:         "~@:a",
+			expectedTokens: []ftoken{&directive{char: rune('a'), colonMod: true, atMod: true}},
 		},
 		{
-			"~12d",
-			buildGraph([]ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}}}}),
+			format:         "~12d",
+			expectedTokens: []ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}}}},
 		},
 		{
-			"~-12d",
-			buildGraph([]ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: -12}}}}),
+			format:         "~-12d",
+			expectedTokens: []ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: -12}}}},
 		},
 		{
-			"~+12d",
-			buildGraph([]ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}}}}),
+			format:         "~+12d",
+			expectedTokens: []ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}}}},
 		},
 		{
-			"~'0d",
-			buildGraph([]ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{charParam: '0'}}}}),
+			format:         "~'0d",
+			expectedTokens: []ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{charParam: '0'}}}},
 		},
 		{
-			"~12,'xd",
-			buildGraph([]ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}, prefixParam{charParam: 'x'}}}}),
+			format:         "~12,'xd",
+			expectedTokens: []ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}, prefixParam{charParam: 'x'}}}},
 		},
 		{
-			"foo ~:a bar",
-			buildGraph([]ftoken{NewLiteral("foo "), &directive{char: rune('a'), colonMod: true}, NewLiteral(" bar")}),
+			format:         "foo ~:a bar",
+			expectedTokens: []ftoken{NewLiteral("foo "), &directive{char: rune('a'), colonMod: true}, NewLiteral(" bar")},
+		},
+		{
+			format:            "~{~a~^, ~}",
+			expectedTokens:    []ftoken{NewCharDir('{'), NewCharDir('a'), NewCharDir('^'), NewLiteral(", "), NewCharDir('}')},
+			expectedRepeation: []repeatDef{repeatDef{index: 4, linksTo: 0}},
 		},
 	}
 
@@ -61,7 +67,8 @@ func TestParseFormatGraph(t *testing.T) {
 		t.Run(tc.format, func(t *testing.T) {
 			node := parseFormatGraph(tc.format)
 			var nodeExpected ftoken
-			nodeExpected = &tc.expectedFormatGraph
+			graph := buildGraph(tc.expectedTokens, tc.expectedRepeation)
+			nodeExpected = &graph
 			assert.NotNil(t, node)
 
 			var i = 0
@@ -94,6 +101,11 @@ func Test_A(t *testing.T) {
 
 //helper
 
+type repeatDef struct {
+	index   int
+	linksTo int
+}
+
 type formatTest struct {
 	format   string
 	args     []interface{}
@@ -104,13 +116,24 @@ func formatT(expected string, format string, args ...interface{}) formatTest {
 	return formatTest{format, args, expected}
 }
 
-func buildGraph(tokens []ftoken) root {
+func buildGraph(tokens []ftoken, repeatDef []repeatDef) root {
 	rootDir := root{}
 	var curDir ftoken
 	curDir = &rootDir
-	for _, token := range tokens {
+	for ix, token := range tokens {
+		dir, ok := token.(*directive)
+		if ok {
+			dir.controlDef = getControlDef(dir.char)
+		}
 		curDir.SetNext(token)
 		curDir = token
+
+		for _, repeat := range repeatDef {
+			if repeat.index == ix {
+				token.SetRepeatRef(tokens[repeat.linksTo])
+			}
+		}
 	}
+
 	return rootDir
 }

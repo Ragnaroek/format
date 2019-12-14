@@ -11,6 +11,7 @@ func Format(format string, a ...interface{}) {
 }
 
 func Sformat(format string, a ...interface{}) string {
+	//TODO cache format graph
 	fg := parseFormatGraph(format)
 	fmt.Printf("fg = %#v", fg)
 	return ""
@@ -18,6 +19,7 @@ func Sformat(format string, a ...interface{}) string {
 
 func parseFormatGraph(format string) ftoken {
 	runes := []rune(format)
+	var parenStack []*directive
 	var rootDir ftoken
 	rootDir = &root{}
 	curDirective := rootDir
@@ -37,9 +39,24 @@ func parseFormatGraph(format string) ftoken {
 			i += skip
 			curDirective.SetNext(&directive)
 			curDirective = &directive
+
+			if directive.controlDef.repeatStart {
+				parenStack = append(parenStack, &directive)
+			}
+			if directive.controlDef.repeatEnd {
+				n := len(parenStack) - 1
+				if n < 0 {
+					panic("no peer for repeat control found") //TODO add error directive
+				}
+				popped := parenStack[n]
+				parenStack = parenStack[:n] //pop
+				if directive.controlDef.peerChar != popped.char {
+					panic(fmt.Sprintf("unbalanced nested controls, expected %c, got %c", directive.controlDef.peerChar, popped.char)) //TODO add error directive
+				}
+				directive.SetRepeatRef(popped)
+			}
 		} else {
 			literalBuf = append(literalBuf, runes[i]) //OPT: propably too slow
-			//TODO collect runes for literal format directive
 		}
 	}
 
@@ -116,12 +133,21 @@ func parseDirective(start int, format []rune) (directive, int, error) {
 		} else if next == ',' {
 			i++
 		} else {
-			return directive{
+
+			controlChar := format[i]
+			controlDef := getControlDef(controlChar)
+			if controlDef == nil {
+				return directive{}, 0, fmt.Errorf("control char %c not found", controlChar) //TODO add error directive instead
+			}
+
+			dir := directive{
 				atMod:       atMod,
 				colonMod:    colonMod,
 				prefixParam: prefixParams,
-				char:        format[i],
-			}, (i - start), nil
+				char:        controlChar,
+				controlDef:  controlDef,
+			}
+			return dir, (i - start), nil
 		}
 
 		next, err = nextChar(i, format)
@@ -157,8 +183,14 @@ func nextChar(i int, format []rune) (rune, error) {
 
 type ftoken interface {
 	ConsumesArg() bool
+
+	Repeats() bool
+	RepeatRef() ftoken
+	SetRepeatRef(ftoken)
+
 	Next() ftoken
 	SetNext(ftoken)
+
 	Format(interface{}) string
 }
 
@@ -180,6 +212,17 @@ func (l *root) SetNext(token ftoken) {
 
 func (l *root) Format(_ interface{}) string {
 	return ""
+}
+
+func (l *root) Repeats() bool {
+	return false
+}
+
+func (l *root) RepeatRef() ftoken {
+	return nil
+}
+
+func (l *root) SetRepeatRef(_ ftoken) {
 }
 
 type literal struct {
@@ -207,12 +250,30 @@ func (l *literal) Format(_ interface{}) string {
 	return l.literal
 }
 
+func (l *literal) Repeats() bool {
+	return false
+}
+
+func (l *literal) RepeatRef() ftoken {
+	return nil
+}
+
+func (l *literal) SetRepeatRef(_ ftoken) {
+}
+
 type directive struct {
 	prefixParam []prefixParam
 	colonMod    bool
 	atMod       bool
 	char        rune
 	next        ftoken
+	repeats     bool
+	repeatRef   ftoken
+	controlDef  *controlDef
+}
+
+func NewCharDir(char rune) ftoken {
+	return &directive{char: char}
 }
 
 type prefixParam struct {
@@ -234,4 +295,16 @@ func (l *directive) SetNext(token ftoken) {
 
 func (l *directive) Format(_ interface{}) string {
 	return "error"
+}
+
+func (l *directive) Repeats() bool {
+	return l.repeats
+}
+
+func (l *directive) RepeatRef() ftoken {
+	return l.repeatRef
+}
+
+func (l *directive) SetRepeatRef(token ftoken) {
+	l.repeatRef = token
 }
