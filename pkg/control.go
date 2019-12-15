@@ -4,21 +4,23 @@ var controlTable = make(map[rune]*controlDef)
 
 func init() {
 	AddRepeatingControl('{', '}')
-	AddControl(NewControlDef('a'))
-	AddControl(NewControlDef('d'))
-	AddControl(NewControlDef('^'))
+	AddControl(NewControlDef('a', applyA))
+	AddControl(NewControlDef('d', applyD))
+	AddControl(NewControlDef('^', applyCircumflex))
 }
+
+type ApplyFn func(interface{}) string
 
 type controlDef struct {
 	controlChar rune
 	repeatStart bool
 	repeatEnd   bool
 	peerChar    rune //only relevant if repeatStart or repeatEnd is true
-	//TODO controlRenderFn
+	applyFn     ApplyFn
 }
 
-func NewControlDef(char rune) controlDef {
-	return controlDef{controlChar: char}
+func NewControlDef(char rune, fn ApplyFn) controlDef {
+	return controlDef{controlChar: char, applyFn: fn}
 }
 
 func AddRepeatingControl(startChar rune, endChar rune) {

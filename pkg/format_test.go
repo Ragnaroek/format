@@ -65,7 +65,8 @@ func TestParseFormatGraph(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.format, func(t *testing.T) {
-			node := parseFormatGraph(tc.format)
+			root := parseFormatGraph(tc.format)
+			var node ftoken = &root
 			var nodeExpected ftoken
 			graph := buildGraph(tc.expectedTokens, tc.expectedRepeation)
 			nodeExpected = &graph
@@ -82,10 +83,9 @@ func TestParseFormatGraph(t *testing.T) {
 	}
 }
 
-/*
 func Test_A(t *testing.T) {
 	tcs := []formatTest{
-		formatT("~a", "Hello"),
+		formatT("Hello", "~a", "Hello"),
 	}
 
 	for _, tc := range tcs {
@@ -97,7 +97,6 @@ func Test_A(t *testing.T) {
 		})
 	}
 }
-*/
 
 //helper
 

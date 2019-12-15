@@ -3,6 +3,7 @@ package format
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"unicode"
 )
 
@@ -13,16 +14,35 @@ func Format(format string, a ...interface{}) {
 func Sformat(format string, a ...interface{}) string {
 	//TODO cache format graph
 	fg := parseFormatGraph(format)
-	fmt.Printf("fg = %#v", fg)
-	return ""
+	return applyFormat(fg, a...)
 }
 
-func parseFormatGraph(format string) ftoken {
+func applyFormat(root root, a ...interface{}) string {
+	var result strings.Builder
+
+	node := root.Next()
+	argPtr := 0
+	for node != nil {
+		var str string
+		if node.ConsumesArg() {
+			str = node.Format(a[argPtr])
+			argPtr++
+		} else {
+			str = node.Format(nil)
+		}
+		result.WriteString(str)
+
+		node = node.Next()
+	}
+
+	return result.String()
+}
+
+func parseFormatGraph(format string) root {
 	runes := []rune(format)
 	var parenStack []*directive
-	var rootDir ftoken
-	rootDir = &root{}
-	curDirective := rootDir
+	rootDir := root{}
+	var curDirective ftoken = &rootDir
 	literalBuf := make([]rune, 0)
 	for i := 0; i < len(runes); i++ {
 		if runes[i] == '~' {
@@ -293,8 +313,8 @@ func (l *directive) SetNext(token ftoken) {
 	l.next = token
 }
 
-func (l *directive) Format(_ interface{}) string {
-	return "error"
+func (l *directive) Format(arg interface{}) string {
+	return l.controlDef.applyFn(arg)
 }
 
 func (l *directive) Repeats() bool {
