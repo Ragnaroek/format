@@ -302,7 +302,7 @@ type prefixParam struct {
 }
 
 func (l *directive) ConsumesArg() bool {
-	return true
+	return l.controlDef.consumesArg
 }
 
 func (l *directive) Next() ftoken {

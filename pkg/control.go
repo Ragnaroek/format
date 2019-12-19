@@ -3,9 +3,13 @@ package format
 var controlTable = make(map[rune]*controlDef)
 
 func init() {
+	//Tested
+	AddControl(NewControlDef('c', applyC))
+	AddControl(NewNoArgControlDef('%', applyPercent))
+
+	//Untested yet
 	AddRepeatingControl('{', '}')
 	AddControl(NewControlDef('a', applyA))
-	AddControl(NewControlDef('c', applyC))
 	AddControl(NewControlDef('d', applyD))
 	AddControl(NewControlDef('^', applyCircumflex))
 }
@@ -14,6 +18,7 @@ type ApplyFn func(interface{}, *directive) string
 
 type controlDef struct {
 	controlChar rune
+	consumesArg bool
 	repeatStart bool
 	repeatEnd   bool
 	peerChar    rune //only relevant if repeatStart or repeatEnd is true
@@ -21,12 +26,17 @@ type controlDef struct {
 }
 
 func NewControlDef(char rune, fn ApplyFn) controlDef {
-	return controlDef{controlChar: char, applyFn: fn}
+	return controlDef{controlChar: char, applyFn: fn, consumesArg: true}
+}
+
+//Create a control that consumes no args
+func NewNoArgControlDef(char rune, fn ApplyFn) controlDef {
+	return controlDef{controlChar: char, applyFn: fn, consumesArg: false}
 }
 
 func AddRepeatingControl(startChar rune, endChar rune) {
-	AddControl(controlDef{controlChar: startChar, repeatStart: true, peerChar: endChar})
-	AddControl(controlDef{controlChar: endChar, repeatEnd: true, peerChar: startChar})
+	AddControl(controlDef{controlChar: startChar, repeatStart: true, peerChar: endChar, consumesArg: true})
+	AddControl(controlDef{controlChar: endChar, repeatEnd: true, peerChar: startChar, consumesArg: true})
 }
 
 func AddControl(def controlDef) {
