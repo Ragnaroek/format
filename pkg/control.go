@@ -5,11 +5,12 @@ var controlTable = make(map[rune]*controlDef)
 func init() {
 	AddRepeatingControl('{', '}')
 	AddControl(NewControlDef('a', applyA))
+	AddControl(NewControlDef('c', applyC))
 	AddControl(NewControlDef('d', applyD))
 	AddControl(NewControlDef('^', applyCircumflex))
 }
 
-type ApplyFn func(interface{}) string
+type ApplyFn func(interface{}, *directive) string
 
 type controlDef struct {
 	controlChar rune

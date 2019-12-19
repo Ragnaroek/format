@@ -87,8 +87,28 @@ func Test_A(t *testing.T) {
 	tcs := []formatTest{
 		formatT("Hello", "~a", "Hello"),
 	}
+	runTests(t, tcs)
+}
 
-	for _, tc := range tcs {
+func Test_C(t *testing.T) {
+	tcs := []formatTest{
+		formatT("k", "~c", 'k'),
+		formatT("🥭", "~c", '🥭'),
+		formatT(" ", "~c", ' '),
+		formatT("\n", "~c", '\n'),
+		formatT("\x00", "~c", '\x00'),
+		formatT("~!c(string=foo)", "~c", "foo"),
+		//modifier @
+		formatT("'k'", "~@c", 'k'),
+		formatT("'🥭'", "~@c", '🥭'),
+	}
+	runTests(t, tcs)
+}
+
+//helper
+
+func runTests(t *testing.T, tests []formatTest) {
+	for _, tc := range tests {
 		t.Run(tc.format, func(t *testing.T) {
 			result := Sformat(tc.format, tc.args...)
 			if result != tc.expected {
@@ -97,8 +117,6 @@ func Test_A(t *testing.T) {
 		})
 	}
 }
-
-//helper
 
 type repeatDef struct {
 	index   int

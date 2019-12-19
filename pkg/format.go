@@ -314,7 +314,7 @@ func (l *directive) SetNext(token ftoken) {
 }
 
 func (l *directive) Format(arg interface{}) string {
-	return l.controlDef.applyFn(arg)
+	return l.controlDef.applyFn(arg, l)
 }
 
 func (l *directive) Repeats() bool {
