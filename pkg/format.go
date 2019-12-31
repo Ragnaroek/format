@@ -25,10 +25,10 @@ func applyFormat(root root, a ...interface{}) string {
 	for node != nil {
 		var str string
 		if node.ConsumesArg() {
-			str = node.Format(a[argPtr])
+			str = node.Format(a[argPtr], &result)
 			argPtr++
 		} else {
-			str = node.Format(nil)
+			str = node.Format(nil, &result)
 		}
 		result.WriteString(str)
 
@@ -211,7 +211,7 @@ type ftoken interface {
 	Next() ftoken
 	SetNext(ftoken)
 
-	Format(interface{}) string
+	Format(interface{}, *strings.Builder) string
 }
 
 type root struct {
@@ -230,7 +230,7 @@ func (l *root) SetNext(token ftoken) {
 	l.next = token
 }
 
-func (l *root) Format(_ interface{}) string {
+func (l *root) Format(_ interface{}, _ *strings.Builder) string {
 	return ""
 }
 
@@ -266,7 +266,7 @@ func (l *literal) SetNext(token ftoken) {
 	l.next = token
 }
 
-func (l *literal) Format(_ interface{}) string {
+func (l *literal) Format(_ interface{}, _ *strings.Builder) string {
 	return l.literal
 }
 
@@ -313,8 +313,8 @@ func (l *directive) SetNext(token ftoken) {
 	l.next = token
 }
 
-func (l *directive) Format(arg interface{}) string {
-	return l.controlDef.applyFn(arg, l)
+func (l *directive) Format(arg interface{}, input *strings.Builder) string {
+	return l.controlDef.applyFn(arg, l, input)
 }
 
 func (l *directive) Repeats() bool {

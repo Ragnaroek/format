@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func applyC(arg interface{}, d *directive) string {
+func applyC(arg interface{}, d *directive, _ *strings.Builder) string {
 	switch v := arg.(type) {
 	case rune:
 		if d.atMod {
@@ -18,7 +18,7 @@ func applyC(arg interface{}, d *directive) string {
 	}
 }
 
-func applyPercent(_ interface{}, d *directive) string {
+func applyPercent(_ interface{}, d *directive, _ *strings.Builder) string {
 	param, ok := singleNumParam(d, 1)
 	if !ok {
 		return numParamError(d, 1)
@@ -26,7 +26,22 @@ func applyPercent(_ interface{}, d *directive) string {
 	return strings.Repeat("\n", param)
 }
 
-func applyA(arg interface{}, d *directive) string {
+func applyAmp(_ interface{}, d *directive, output *strings.Builder) string {
+	param, ok := singleNumParam(d, 1)
+	if !ok {
+		return numParamError(d, 1)
+	}
+
+	outStr := output.String()
+	lenOutStr := len(outStr)
+	if lenOutStr > 0 && outStr[lenOutStr-1] == '\n' {
+		return strings.Repeat("\n", param-1)
+	}
+
+	return strings.Repeat("\n", param)
+}
+
+func applyA(arg interface{}, d *directive, _ *strings.Builder) string {
 	switch v := arg.(type) {
 	case string:
 		return v
@@ -35,11 +50,11 @@ func applyA(arg interface{}, d *directive) string {
 	}
 }
 
-func applyD(arg interface{}, d *directive) string {
+func applyD(arg interface{}, d *directive, _ *strings.Builder) string {
 	return "D"
 }
 
-func applyCircumflex(arg interface{}, d *directive) string {
+func applyCircumflex(arg interface{}, d *directive, _ *strings.Builder) string {
 	return "^"
 }
 

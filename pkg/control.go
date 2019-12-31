@@ -1,20 +1,26 @@
 package format
 
+import (
+	"strings"
+)
+
 var controlTable = make(map[rune]*controlDef)
 
 func init() {
 	//Tested
 	AddControl(NewControlDef('c', applyC))
 	AddControl(NewNoArgControlDef('%', applyPercent))
+	AddControl(NewNoArgControlDef('&', applyAmp))
 
 	//Untested yet
 	AddRepeatingControl('{', '}')
 	AddControl(NewControlDef('a', applyA))
 	AddControl(NewControlDef('d', applyD))
 	AddControl(NewControlDef('^', applyCircumflex))
+
 }
 
-type ApplyFn func(interface{}, *directive) string
+type ApplyFn func(interface{}, *directive, *strings.Builder) string
 
 type controlDef struct {
 	controlChar rune
