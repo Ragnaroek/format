@@ -41,6 +41,14 @@ func applyAmp(_ interface{}, d *directive, output *strings.Builder) string {
 	return strings.Repeat("\n", param)
 }
 
+func applyVerticalBar(_ interface{}, d *directive, output *strings.Builder) string {
+	param, ok := singleNumParam(d, 1)
+	if !ok {
+		return numParamError(d, 1)
+	}
+	return strings.Repeat("\x0C", param)
+}
+
 func applyTilde(_ interface{}, d *directive, output *strings.Builder) string {
 	param, ok := singleNumParam(d, 1)
 	if !ok {

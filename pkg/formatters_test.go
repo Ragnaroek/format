@@ -52,9 +52,9 @@ func Test_Amp(t *testing.T) {
 func Test_VerticalBar(t *testing.T) {
 	tcs := []formatTest{
 		formatT("", "~0|"),
-		formatT("\n", "~|"),
-		formatT("\n", "~1|"),
-		formatT("\n\n\n\n\n\n", "~6|"),
+		formatT("\x0C", "~|"),
+		formatT("\x0C", "~1|"),
+		formatT("\x0C\x0C\x0C\x0C\x0C\x0C", "~6|"),
 		//errs
 		formatT("~!|(prefix.num!=1)", "~6,8|"),
 	}
@@ -62,7 +62,7 @@ func Test_VerticalBar(t *testing.T) {
 }
 
 //~%
-func Test_Tild(t *testing.T) {
+func Test_Tilde(t *testing.T) {
 	tcs := []formatTest{
 		formatT("", "~0~"),
 		formatT("~", "~~"),

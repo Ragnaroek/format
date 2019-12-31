@@ -11,7 +11,7 @@ func init() {
 	AddControl(NewControlDef('c', applyC))
 	AddControl(NewNoArgControlDef('%', applyPercent))
 	AddControl(NewNoArgControlDef('&', applyAmp))
-	AddControl(NewNoArgControlDef('|', applyPercent)) //alias for %
+	AddControl(NewNoArgControlDef('|', applyVerticalBar))
 	AddControl(NewNoArgControlDef('~', applyTilde))
 
 	//Untested yet
