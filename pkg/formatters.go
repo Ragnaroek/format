@@ -41,6 +41,14 @@ func applyAmp(_ interface{}, d *directive, output *strings.Builder) string {
 	return strings.Repeat("\n", param)
 }
 
+func applyTilde(_ interface{}, d *directive, output *strings.Builder) string {
+	param, ok := singleNumParam(d, 1)
+	if !ok {
+		return numParamError(d, 1)
+	}
+	return strings.Repeat("~", param)
+}
+
 func applyA(arg interface{}, d *directive, _ *strings.Builder) string {
 	switch v := arg.(type) {
 	case string:
