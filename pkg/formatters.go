@@ -3,6 +3,7 @@ package format
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -55,6 +56,25 @@ func applyTilde(_ interface{}, d *directive, output *strings.Builder) string {
 		return numParamError(d, 1)
 	}
 	return strings.Repeat("~", param)
+}
+
+func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
+	var value int64
+	switch v := arg.(type) {
+	case int64:
+		value = v
+	case int:
+		value = int64(v)
+	default:
+		return typeError('r', arg)
+	}
+
+	radix, ok := singleNumParam(d, 10)
+	if !ok {
+		return numParamError(d, 10)
+	}
+
+	return strconv.FormatInt(value, radix)
 }
 
 func applyA(arg interface{}, d *directive, _ *strings.Builder) string {

@@ -13,6 +13,7 @@ func init() {
 	AddControl(NewNoArgControlDef('&', applyAmp))
 	AddControl(NewNoArgControlDef('|', applyVerticalBar))
 	AddControl(NewNoArgControlDef('~', applyTilde))
+	AddControl(NewControlDef('r', applyR))
 
 	//Untested yet
 	AddRepeatingControl('{', '}')

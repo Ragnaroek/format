@@ -74,6 +74,22 @@ func Test_Tilde(t *testing.T) {
 	runTests(t, tcs)
 }
 
+func Test_R(t *testing.T) {
+	tcs := []formatTest{
+		//radix control, binary
+		formatT("1010", "~2r", 10),
+		formatT("111111", "~2r", 63),
+		//radix control, octal
+		formatT("10", "~8r", 8),
+		formatT("37", "~8r", 31),
+		//radix control, explizit base 10
+		formatT("10", "~10r", 10),
+		formatT("666", "~10r", 666),
+		//errs
+	}
+	runTests(t, tcs)
+}
+
 func Test_A(t *testing.T) {
 	tcs := []formatTest{
 		formatT("Hello", "~a", "Hello"),
