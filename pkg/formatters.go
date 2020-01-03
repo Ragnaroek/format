@@ -69,8 +69,8 @@ func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
 		return typeError('r', arg)
 	}
 
-	if len(d.prefixParam) == 0 && !d.atMod && !d.colonMod {
-		return cardinalR(value)
+	if len(d.prefixParam) == 0 && !d.atMod {
+		return wordR(value, d.colonMod)
 	}
 
 	radix, ok := singleNumParam(d, 10)
@@ -81,7 +81,7 @@ func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
 	return strconv.FormatInt(value, radix)
 }
 
-func cardinalR(valueIn int64) string {
+func wordR(valueIn int64, colonMod bool) string {
 
 	negative := valueIn < 0
 	value := valueIn
@@ -89,7 +89,7 @@ func cardinalR(valueIn int64) string {
 		value = -1 * valueIn
 	}
 
-	parts := cardinalRRecu([]rune(strconv.FormatInt(value, 10)), 0)
+	parts := cardinalRRecu([]rune(strconv.FormatInt(value, 10)), 0, colonMod)
 	var builder strings.Builder
 	if negative {
 		builder.WriteString("negative ")
@@ -103,7 +103,7 @@ func cardinalR(valueIn int64) string {
 	return builder.String()
 }
 
-func cardinalRRecu(num []rune, pow int) []string {
+func cardinalRRecu(num []rune, pow int, colonMod bool) []string {
 
 	if pow >= len(num) {
 		return []string{}
@@ -128,29 +128,42 @@ func cardinalRRecu(num []rune, pow int) []string {
 
 	var builder strings.Builder
 	if powNum != nil {
-		builder.WriteString(nameTen(string(*powNum)))
+		builder.WriteString(nameTenCardinal(string(*powNum)))
 		builder.WriteString(" ")
-		builder.WriteString(namePow(2))
+
 		if string(tens) != "00" {
+			builder.WriteString("hundred")
 			builder.WriteString(" ")
-			builder.WriteString(nameTen(string(tens)))
+			if colonMod && pow == 0 {
+				builder.WriteString(nameTenOrdinal(string(tens)))
+			} else {
+				builder.WriteString(nameTenCardinal(string(tens)))
+			}
+		} else {
+			if colonMod && pow == 0 {
+				builder.WriteString("hundredth")
+			} else {
+				builder.WriteString("hundred")
+			}
 		}
 	} else {
-		builder.WriteString(nameTen(string(tens)))
+		if colonMod && pow == 0 {
+			builder.WriteString(nameTenOrdinal(string(tens)))
+		} else {
+			builder.WriteString(nameTenCardinal(string(tens)))
+		}
 	}
 
 	if pow > 0 {
 		builder.WriteString(" ")
 		builder.WriteString(namePow(pow))
 	}
-	recuResult := cardinalRRecu(num, pow+3)
+	recuResult := cardinalRRecu(num, pow+3, colonMod)
 	return append(recuResult, builder.String())
 }
 
 func namePow(pow int) string {
 	switch pow {
-	case 2:
-		return "hundred"
 	case 3:
 		return "thousand"
 	case 6:
@@ -168,15 +181,231 @@ func namePow(pow int) string {
 	}
 }
 
-func nameTen(tenIn string) string {
+func nameTenOrdinal(tenIn string) string {
 	if len(tenIn) > 2 {
-		return "<err ten name>"
+		return "<err ten ordinal name>"
+	}
+	ten := normaliseTen(tenIn)
+
+	switch ten {
+	case "0":
+		return "zeroth"
+	case "1":
+		return "first"
+	case "2":
+		return "second"
+	case "3":
+		return "third"
+	case "4":
+		return "fourth"
+	case "5":
+		return "fifth"
+	case "6":
+		return "sixth"
+	case "7":
+		return "seventh"
+	case "8":
+		return "eighth"
+	case "9":
+		return "ninth"
+	case "10":
+		return "tenth"
+	case "11":
+		return "eleventh"
+	case "12":
+		return "twelfth"
+	case "13":
+		return "thirteenth"
+	case "14":
+		return "fourteenth"
+	case "15":
+		return "fifteenth"
+	case "16":
+		return "sixteenth"
+	case "17":
+		return "seventeenth"
+	case "18":
+		return "eighteenth"
+	case "19":
+		return "nineteenth"
+	case "20":
+		return "twentieth"
+	case "21":
+		return "twenty-first"
+	case "22":
+		return "twenty-second"
+	case "23":
+		return "twenty-third"
+	case "24":
+		return "twenty-fourth"
+	case "25":
+		return "twenty-fifth"
+	case "26":
+		return "twenty-sixth"
+	case "27":
+		return "twenty-seventh"
+	case "28":
+		return "twenty-eighth"
+	case "29":
+		return "twenty-ninth"
+	case "30":
+		return "thirtieth"
+	case "31":
+		return "thirty-first"
+	case "32":
+		return "thirty-second"
+	case "33":
+		return "thirty-third"
+	case "34":
+		return "thirty-fourth"
+	case "35":
+		return "thirty-fifth"
+	case "36":
+		return "thirty-sixth"
+	case "37":
+		return "thirty-seventh"
+	case "38":
+		return "thirty-eighth"
+	case "39":
+		return "thirty-ninth"
+	case "40":
+		return "fortieth"
+	case "41":
+		return "forty-first"
+	case "42":
+		return "forty-second"
+	case "43":
+		return "forty-third"
+	case "44":
+		return "forty-fourth"
+	case "45":
+		return "forty-fifth"
+	case "46":
+		return "forty-sixth"
+	case "47":
+		return "forty-seventh"
+	case "48":
+		return "forty-eighth"
+	case "49":
+		return "forty-ninth"
+	case "50":
+		return "fiftieth"
+	case "51":
+		return "fifty-first"
+	case "52":
+		return "fifty-second"
+	case "53":
+		return "fifty-third"
+	case "54":
+		return "fifty-fourth"
+	case "55":
+		return "fifty-fifth"
+	case "56":
+		return "fifty-sixth"
+	case "57":
+		return "fifty-seventh"
+	case "58":
+		return "fifty-eighth"
+	case "59":
+		return "fifty-ninth"
+	case "60":
+		return "sixtieth"
+	case "61":
+		return "sixty-first"
+	case "62":
+		return "sixty-second"
+	case "63":
+		return "sixty-third"
+	case "64":
+		return "sixty-fourth"
+	case "65":
+		return "sixty-fifth"
+	case "66":
+		return "sixty-sixth"
+	case "67":
+		return "sixty-seventh"
+	case "68":
+		return "sixty-eighth"
+	case "69":
+		return "sixty-ninth"
+	case "70":
+		return "seventieth"
+	case "71":
+		return "seventy-first"
+	case "72":
+		return "seventy-second"
+	case "73":
+		return "seventy-third"
+	case "74":
+		return "seventy-fourth"
+	case "75":
+		return "seventy-fifth"
+	case "76":
+		return "seventy-sixth"
+	case "77":
+		return "seventy-seventh"
+	case "78":
+		return "seventy-eighth"
+	case "79":
+		return "seventy-ninth"
+	case "80":
+		return "eightieth"
+	case "81":
+		return "eighty-first"
+	case "82":
+		return "eighty-second"
+	case "83":
+		return "eighty-third"
+	case "84":
+		return "eighty-fourth"
+	case "85":
+		return "eighty-fifth"
+	case "86":
+		return "eighty-sixth"
+	case "87":
+		return "eighty-seventh"
+	case "88":
+		return "eighty-eighth"
+	case "89":
+		return "eighty-ninth"
+	case "90":
+		return "ninetieth"
+	case "91":
+		return "ninety-first"
+	case "92":
+		return "ninety-second"
+	case "93":
+		return "ninety-third"
+	case "94":
+		return "ninety-fourth"
+	case "95":
+		return "ninety-fifth"
+	case "96":
+		return "ninety-sixth"
+	case "97":
+		return "ninety-seventh"
+	case "98":
+		return "ninety-eighth"
+	case "99":
+		return "ninety-ninth"
+	default:
+		return "<err ten ordinal name>"
+	}
+}
+
+func normaliseTen(tenIn string) string {
+	if len(tenIn) == 2 && tenIn[0] == '0' {
+		return string(tenIn[1])
+	}
+	return tenIn
+}
+
+func nameTenCardinal(tenIn string) string {
+	if len(tenIn) > 2 {
+		return "<err cardinal name>"
 	}
 
-	ten := tenIn
-	if len(tenIn) == 2 && tenIn[0] == '0' {
-		ten = string(tenIn[1])
-	}
+	ten := normaliseTen(tenIn)
 
 	switch ten {
 	case "0":
@@ -380,7 +609,7 @@ func nameTen(tenIn string) string {
 	case "99":
 		return "ninety-nine"
 	default:
-		return "<err ten name>"
+		return "<err cardinal name>"
 	}
 }
 
