@@ -2,6 +2,7 @@ package format
 
 import (
 	"strings"
+	"unicode"
 )
 
 var controlTable = make(map[rune]*controlDef)
@@ -54,5 +55,5 @@ func AddControl(def controlDef) {
 }
 
 func getControlDef(char rune) *controlDef {
-	return controlTable[char]
+	return controlTable[unicode.ToLower(char)]
 }
