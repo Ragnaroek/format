@@ -81,10 +81,19 @@ func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
 	return strconv.FormatInt(value, radix)
 }
 
-func cardinalR(value int64) string {
+func cardinalR(valueIn int64) string {
+
+	negative := valueIn < 0
+	value := valueIn
+	if negative {
+		value = -1 * valueIn
+	}
 
 	parts := cardinalRRecu([]rune(strconv.FormatInt(value, 10)), 0)
 	var builder strings.Builder
+	if negative {
+		builder.WriteString("negative ")
+	}
 	for i, part := range parts {
 		if i != 0 {
 			builder.WriteString(" ")
@@ -137,16 +146,6 @@ func cardinalRRecu(num []rune, pow int) []string {
 	recuResult := cardinalRRecu(num, pow+3)
 	return append(recuResult, builder.String())
 }
-
-/*
-
-4_343_637_058_903_381_868
-formatters_test.go:319: expected
-`four quintillion three hundred forty-three quadrillion six hundred thirty-seven trillion fifty-eight billion nine hundred three million three hundred eighty-one thousand eight hundred sixty-eight`, got
-`four quintillion three hundred forty-three quadrillion six hundred thirty-seven trillion zero hundred fifty-eight billion nine hundred three million three hundred eighty-one thousand eight hundred sixty-eight`
-
-
-*/
 
 func namePow(pow int) string {
 	switch pow {

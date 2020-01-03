@@ -297,6 +297,11 @@ func Test_R_Cardinal(t *testing.T) {
 		formatT("five quintillion seven hundred fifty-five quadrillion six hundred seventy-six trillion five hundred ninety-four billion nine hundred fifty-one million one hundred eleven thousand nine hundred twenty-six", "~R", 5755676594951111926),
 		formatT("two quintillion nine hundred seventy quadrillion three hundred ninety-five trillion forty-five billion eight hundred fifty-six million thirty-three thousand four hundred twenty-five", "~R", 2970395045856033425),
 		formatT("nine quintillion two hundred twenty-three quadrillion three hundred seventy-two trillion thirty-six billion eight hundred fifty-four million seven hundred seventy-five thousand eight hundred seven", "~R", 9223372036854775807),
+		//hand-crafted test
+		formatT("six hundred sixty-six", "~R", 666),
+		formatT("negative six hundred sixty-six", "~R", -666),
+		formatT("zero", "~R", -0),
+		formatT("negative five quintillion seven hundred fifty-five quadrillion six hundred seventy-six trillion five hundred ninety-four billion nine hundred fifty-one million one hundred eleven thousand nine hundred twenty-six", "~R", -5755676594951111926),
 	}
 	runTests(t, tcs)
 
