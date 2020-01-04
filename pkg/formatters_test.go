@@ -86,7 +86,9 @@ func Test_R(t *testing.T) {
 		//radix control, explizit base 10
 		formatT("10", "~10r", 10),
 		formatT("666", "~10r", 666),
+		formatT("1098", "~10r", int64(1098)),
 		//errs
+		formatT("~!r(string=foo)", "~10r", "foo"),
 	}
 	runTests(t, tcs)
 }
@@ -937,6 +939,33 @@ func Test_R_OldRoman(t *testing.T) {
 		formatT("CCVIII", "~:@R", 208),
 		formatT("MMDCCLXXXVII", "~:@R", 2787),
 		formatT("MMMDCCCCLXXXXVIIII", "~:@R", 3999),
+	}
+	runTests(t, tcs)
+}
+
+func Test_R_Args(t *testing.T) {
+	tcs := []formatTest{
+		//@
+		formatT("+1", "~10@R", 1),
+		formatT("-1", "~10@R", -1),
+		formatT("+0", "~10@R", 0),
+		//:
+		formatT("1", "~10:R", 1),
+		formatT("100", "~10:R", 100),
+		formatT("-100", "~10:R", -100),
+		formatT("1,000", "~10:R", 1000),
+		formatT("1,666,777", "~10:R", 1666777),
+		formatT("666,777", "~10:R", 666777),
+		formatT("-666,777", "~10:R", -666777),
+		formatT("-9,888,777,666", "~10:R", -9888777666),
+		formatT("9,888,777,666", "~10:R", 9888777666),
+		//:@
+		formatT("+100", "~10:@R", 100),
+		formatT("+1,000", "~10:@R", 1000),
+		formatT("+666,777", "~10:@R", 666777),
+		formatT("-666,777", "~10:@R", -666777),
+		formatT("-9,888,777,666", "~10:@R", -9888777666),
+		formatT("+9,888,777,666", "~10@:R", 9888777666),
 	}
 	runTests(t, tcs)
 }

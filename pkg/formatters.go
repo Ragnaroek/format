@@ -82,7 +82,40 @@ func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
 		return numParamError(d, 10)
 	}
 
-	return strconv.FormatInt(value, radix)
+	formatted := strconv.FormatInt(value, radix)
+	if d.atMod && value >= 0 {
+		formatted = "+" + formatted
+	}
+	if d.colonMod {
+		return formatSeparator(formatted, 3, ',')
+	}
+	return formatted
+}
+
+func formatSeparator(num string, interval int, sepChar rune) string {
+	var builder strings.Builder
+	numDigits := []rune(num)
+
+	sepNum := len(numDigits)
+	if numDigits[0] == '+' {
+		builder.WriteRune('+')
+		sepNum--
+		numDigits = numDigits[1:]
+	} else if numDigits[0] == '-' {
+		builder.WriteRune('-')
+		sepNum--
+		numDigits = numDigits[1:]
+	}
+	maxSep := (sepNum - 1) / 3
+	sep := 0
+	for i, c := range numDigits {
+		if i > 0 && (sepNum-i)%interval == 0 && sep < maxSep {
+			builder.WriteRune(sepChar)
+			sep++
+		}
+		builder.WriteRune(c)
+	}
+	return builder.String()
 }
 
 func romanR(value int64, colonMod bool) string {
