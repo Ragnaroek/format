@@ -53,6 +53,10 @@ func TestParseFormatGraph(t *testing.T) {
 			expectedTokens: []ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}, prefixParam{charParam: 'x'}}}},
 		},
 		{
+			format:         "~10,,,,2:@r",
+			expectedTokens: []ftoken{&directive{char: rune('r'), atMod: true, colonMod: true, prefixParam: []prefixParam{prefixParam{numParam: 10}, prefixParam{empty: true}, prefixParam{empty: true}, prefixParam{empty: true}, prefixParam{numParam: 2}}}},
+		},
+		{
 			format:         "foo ~:a bar",
 			expectedTokens: []ftoken{NewLiteral("foo "), &directive{char: rune('a'), colonMod: true}, NewLiteral(" bar")},
 		},

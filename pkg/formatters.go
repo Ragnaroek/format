@@ -1,8 +1,6 @@
 package format
 
 import (
-	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -77,9 +75,25 @@ func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
 		}
 	}
 
-	radix, ok := singleNumParam(d, 10)
+	radix, ok := numParam(0, d, 10)
 	if !ok {
 		return numParamError(d, 10)
+	}
+	mincol, ok := numParam(1, d, 0)
+	if !ok {
+		return numParamError(d, 0)
+	}
+	padchar, ok := charParam(2, d, ' ')
+	if !ok {
+		return charParamError(d, ' ')
+	}
+	commaChar, ok := charParam(3, d, ',')
+	if !ok {
+		return charParamError(d, ',')
+	}
+	commaInterval, ok := numParam(4, d, 3)
+	if !ok {
+		return numParamError(d, 3)
 	}
 
 	formatted := strconv.FormatInt(value, radix)
@@ -87,12 +101,23 @@ func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
 		formatted = "+" + formatted
 	}
 	if d.colonMod {
-		return formatSeparator(formatted, 3, ',')
+		formatted = formatSeparator(formatted, commaInterval, commaChar)
 	}
-	return formatted
+	return padLeft(formatted, mincol, padchar)
+}
+
+func padLeft(num string, mincol int, padchar rune) string {
+	pad := mincol - len([]rune(num))
+	if pad > 0 {
+		return strings.Repeat(string(padchar), pad) + num
+	}
+	return num
 }
 
 func formatSeparator(num string, interval int, sepChar rune) string {
+	if interval == 0 {
+		return num
+	}
 	var builder strings.Builder
 	numDigits := []rune(num)
 
@@ -106,7 +131,7 @@ func formatSeparator(num string, interval int, sepChar rune) string {
 		sepNum--
 		numDigits = numDigits[1:]
 	}
-	maxSep := (sepNum - 1) / 3
+	maxSep := (sepNum - 1) / interval
 	sep := 0
 	for i, c := range numDigits {
 		if i > 0 && (sepNum-i)%interval == 0 && sep < maxSep {
@@ -890,34 +915,4 @@ func applyD(arg interface{}, d *directive, _ *strings.Builder) string {
 
 func applyCircumflex(arg interface{}, d *directive, _ *strings.Builder) string {
 	return "^"
-}
-
-//Helpers
-
-func romanError(dirChar rune) string {
-	return fmt.Sprintf("~!%c(roman range=[1,3999])", dirChar)
-}
-
-func typeError(dirChar rune, arg interface{}) string {
-	argType := reflect.TypeOf(arg)
-	return fmt.Sprintf("~!%c(%s=%+v)", dirChar, argType.Name(), arg)
-}
-
-func numParamError(d *directive, i int) string {
-	return fmt.Sprintf("~!%c(prefix.num!=%d)", d.char, i)
-}
-
-func singleNumParam(d *directive, defaultValue int) (int, bool) {
-	l := len(d.prefixParam)
-	if l > 1 {
-		return 0, false
-	}
-	if l == 0 {
-		return defaultValue, true
-	}
-	param := d.prefixParam[0]
-	if param.charParam != 0 {
-		return 0, false
-	}
-	return param.numParam, true
 }

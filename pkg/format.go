@@ -106,12 +106,14 @@ func parseDirective(start int, format []rune) (directive, int, error) {
 	atMod := false
 	colonMod := false
 	var prefixParams []prefixParam = nil
+	empty := true
 	for {
 		if unicode.IsDigit(next) {
 			numParam, l, err := parseNum(i, format)
 			if err != nil {
 				return directive{}, 0, err
 			}
+			empty = false
 			prefixParams = append(prefixParams, prefixParam{
 				numParam: numParam,
 			})
@@ -121,6 +123,7 @@ func parseDirective(start int, format []rune) (directive, int, error) {
 			if err != nil {
 				return directive{}, 0, err
 			}
+			empty = false
 			prefixParams = append(prefixParams, prefixParam{
 				numParam: -1 * numParam,
 			})
@@ -130,6 +133,7 @@ func parseDirective(start int, format []rune) (directive, int, error) {
 			if err != nil {
 				return directive{}, 0, err
 			}
+			empty = false
 			prefixParams = append(prefixParams, prefixParam{
 				numParam: numParam,
 			})
@@ -140,6 +144,7 @@ func parseDirective(start int, format []rune) (directive, int, error) {
 			if err != nil {
 				return directive{}, 0, err
 			}
+			empty = false
 			prefixParams = append(prefixParams, prefixParam{
 				charParam: charParam,
 			})
@@ -151,6 +156,10 @@ func parseDirective(start int, format []rune) (directive, int, error) {
 			atMod = true
 			i++
 		} else if next == ',' {
+			if empty {
+				prefixParams = append(prefixParams, prefixParam{empty: true})
+			}
+			empty = true
 			i++
 		} else {
 
@@ -299,6 +308,7 @@ func NewCharDir(char rune) ftoken {
 type prefixParam struct {
 	numParam  int
 	charParam rune
+	empty     bool
 }
 
 func (l *directive) ConsumesArg() bool {
