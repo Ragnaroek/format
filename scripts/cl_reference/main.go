@@ -10,12 +10,11 @@ import (
 	"strings"
 )
 
-const fullRangeStart = 0
+const fullRangeStart = 1
 const fullRangeEnd = 100
 const sampleRangeStart = 101
-const sampleRangeEnd = 9223372036854775807
+const sampleRangeEnd = 3999
 const sampleNum = 100
-const format = "~:R"
 const seed = 666
 
 func main() {
@@ -56,7 +55,7 @@ func main() {
 		})
 	}
 
-	testcode := genTableTest(testcases)
+	testcode := genTableTest(testcases, format)
 	fmt.Println(testcode)
 }
 
@@ -65,7 +64,7 @@ type testcase struct {
 	expectedResult string
 }
 
-func genTableTest(testcases []testcase) string {
+func genTableTest(testcases []testcase, format string) string {
 
 	var result strings.Builder
 	result.WriteString("tcs := []formatTest{\n")

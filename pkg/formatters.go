@@ -69,8 +69,12 @@ func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
 		return typeError('r', arg)
 	}
 
-	if len(d.prefixParam) == 0 && !d.atMod {
-		return wordR(value, d.colonMod)
+	if len(d.prefixParam) == 0 {
+		if !d.atMod {
+			return wordR(value, d.colonMod)
+		} else {
+			return romanR(value)
+		}
 	}
 
 	radix, ok := singleNumParam(d, 10)
@@ -81,8 +85,127 @@ func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
 	return strconv.FormatInt(value, radix)
 }
 
-func wordR(valueIn int64, colonMod bool) string {
+func romanR(value int64) string {
+	if value <= 0 || value > 3999 {
+		return romanError('r')
+	}
 
+	strRep := []rune(strconv.FormatInt(value, 10))
+
+	pow := len(strRep)
+	var builder strings.Builder
+	for _, digit := range strRep {
+		switch pow {
+		case 4:
+			builder.WriteString(romanThousand(digit))
+		case 3:
+			builder.WriteString(romanHundred(digit))
+		case 2:
+			builder.WriteString(romanTens(digit))
+		case 1:
+			builder.WriteString(romanSingle(digit))
+		default:
+		}
+		pow--
+	}
+	return builder.String()
+}
+
+func romanThousand(digit rune) string {
+	switch digit {
+	case '1':
+		return "M"
+	case '2':
+		return "MM"
+	case '3':
+		return "MMM"
+	default:
+		return romanError('r')
+	}
+}
+
+func romanHundred(digit rune) string {
+	switch digit {
+	case '0':
+		return ""
+	case '1':
+		return "C"
+	case '2':
+		return "CC"
+	case '3':
+		return "CCC"
+	case '4':
+		return "CD"
+	case '5':
+		return "D"
+	case '6':
+		return "DC"
+	case '7':
+		return "DCC"
+	case '8':
+		return "DCCC"
+	case '9':
+		return "CM"
+	default:
+		return romanError('r')
+	}
+}
+
+func romanTens(digit rune) string {
+	switch digit {
+	case '0':
+		return ""
+	case '1':
+		return "X"
+	case '2':
+		return "XX"
+	case '3':
+		return "XXX"
+	case '4':
+		return "XL"
+	case '5':
+		return "L"
+	case '6':
+		return "LX"
+	case '7':
+		return "LXX"
+	case '8':
+		return "LXXX"
+	case '9':
+		return "XC"
+	default:
+		return romanError('r')
+	}
+}
+
+func romanSingle(digit rune) string {
+	switch digit {
+	case '0':
+		return ""
+	case '1':
+		return "I"
+	case '2':
+		return "II"
+	case '3':
+		return "III"
+	case '4':
+		return "IV"
+	case '5':
+		return "V"
+	case '6':
+		return "VI"
+	case '7':
+		return "VII"
+	case '8':
+		return "VIII"
+	case '9':
+		return "IX"
+	default:
+		return romanError('r')
+	}
+}
+
+func wordR(valueIn int64, colonMod bool) string {
 	negative := valueIn < 0
 	value := valueIn
 	if negative {
@@ -638,6 +761,10 @@ func applyCircumflex(arg interface{}, d *directive, _ *strings.Builder) string {
 }
 
 //Helpers
+
+func romanError(dirChar rune) string {
+	return fmt.Sprintf("~!%c(roman range=[1,3999])", dirChar)
+}
 
 func typeError(dirChar rune, arg interface{}) string {
 	argType := reflect.TypeOf(arg)
