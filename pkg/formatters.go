@@ -73,7 +73,7 @@ func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
 		if !d.atMod {
 			return wordR(value, d.colonMod)
 		} else {
-			return romanR(value)
+			return romanR(value, d.colonMod)
 		}
 	}
 
@@ -85,7 +85,7 @@ func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
 	return strconv.FormatInt(value, radix)
 }
 
-func romanR(value int64) string {
+func romanR(value int64, colonMod bool) string {
 	if value <= 0 || value > 3999 {
 		return romanError('r')
 	}
@@ -94,20 +94,38 @@ func romanR(value int64) string {
 
 	pow := len(strRep)
 	var builder strings.Builder
-	for _, digit := range strRep {
-		switch pow {
-		case 4:
-			builder.WriteString(romanThousand(digit))
-		case 3:
-			builder.WriteString(romanHundred(digit))
-		case 2:
-			builder.WriteString(romanTens(digit))
-		case 1:
-			builder.WriteString(romanSingle(digit))
-		default:
+	if colonMod {
+		for _, digit := range strRep {
+			switch pow {
+			case 4:
+				builder.WriteString(romanThousand(digit))
+			case 3:
+				builder.WriteString(oldRomanHundred(digit))
+			case 2:
+				builder.WriteString(oldRomanTens(digit))
+			case 1:
+				builder.WriteString(oldRomanSingle(digit))
+			default:
+			}
+			pow--
 		}
-		pow--
+	} else {
+		for _, digit := range strRep {
+			switch pow {
+			case 4:
+				builder.WriteString(romanThousand(digit))
+			case 3:
+				builder.WriteString(romanHundred(digit))
+			case 2:
+				builder.WriteString(romanTens(digit))
+			case 1:
+				builder.WriteString(romanSingle(digit))
+			default:
+			}
+			pow--
+		}
 	}
+
 	return builder.String()
 }
 
@@ -151,6 +169,33 @@ func romanHundred(digit rune) string {
 	}
 }
 
+func oldRomanHundred(digit rune) string {
+	switch digit {
+	case '0':
+		return ""
+	case '1':
+		return "C"
+	case '2':
+		return "CC"
+	case '3':
+		return "CCC"
+	case '4':
+		return "CCCC"
+	case '5':
+		return "D"
+	case '6':
+		return "DC"
+	case '7':
+		return "DCC"
+	case '8':
+		return "DCCC"
+	case '9':
+		return "DCCCC"
+	default:
+		return romanError('r')
+	}
+}
+
 func romanTens(digit rune) string {
 	switch digit {
 	case '0':
@@ -178,6 +223,33 @@ func romanTens(digit rune) string {
 	}
 }
 
+func oldRomanTens(digit rune) string {
+	switch digit {
+	case '0':
+		return ""
+	case '1':
+		return "X"
+	case '2':
+		return "XX"
+	case '3':
+		return "XXX"
+	case '4':
+		return "XXXX"
+	case '5':
+		return "L"
+	case '6':
+		return "LX"
+	case '7':
+		return "LXX"
+	case '8':
+		return "LXXX"
+	case '9':
+		return "LXXXX"
+	default:
+		return romanError('r')
+	}
+}
+
 func romanSingle(digit rune) string {
 	switch digit {
 	case '0':
@@ -200,6 +272,33 @@ func romanSingle(digit rune) string {
 		return "VIII"
 	case '9':
 		return "IX"
+	default:
+		return romanError('r')
+	}
+}
+
+func oldRomanSingle(digit rune) string {
+	switch digit {
+	case '0':
+		return ""
+	case '1':
+		return "I"
+	case '2':
+		return "II"
+	case '3':
+		return "III"
+	case '4':
+		return "IIII"
+	case '5':
+		return "V"
+	case '6':
+		return "VI"
+	case '7':
+		return "VII"
+	case '8':
+		return "VIII"
+	case '9':
+		return "VIIII"
 	default:
 		return romanError('r')
 	}
