@@ -65,7 +65,11 @@ func applyD(arg interface{}, d *directive, _ *strings.Builder) string {
 }
 
 func applyB(arg interface{}, d *directive, _ *strings.Builder) string {
-	return "B"
+	value, ok := valueInt64(arg, d)
+	if !ok {
+		return typeError(d.char, arg)
+	}
+	return intFormat(d, value, 2, 0)
 }
 
 func applyO(arg interface{}, d *directive, _ *strings.Builder) string {

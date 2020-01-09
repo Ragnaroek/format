@@ -1044,6 +1044,54 @@ func Test_D(t *testing.T) {
 	runTests(t, tcs)
 }
 
+func Test_B(t *testing.T) {
+	tcs := []formatTest{
+		formatT("+1", "~@B", 1),
+		formatT("-1", "~@B", -1),
+		formatT("+0", "~@B", 0),
+		//:
+		formatT("1", "~:B", 1),
+		formatT("111", "~:B", 7),
+		formatT("-111", "~:B", -7),
+		formatT("1,000", "~:B", 8),
+		formatT("1,000,000", "~:B", 64),
+		formatT("111,111", "~:B", 63),
+		formatT("-111,111", "~:B", -63),
+		formatT("-1,000,000,000", "~:B", -512),
+		formatT("1,000,000,000", "~:B", 512),
+		//:@
+		formatT("+111", "~:@B", 7),
+		formatT("+1,000", "~:@B", 8),
+		formatT("+111,111", "~:@B", 63),
+		formatT("-111,111", "~:@B", -63),
+		formatT("-1,000,000,000", "~:@B", -512),
+		formatT("+1,000,000,000", "~@:B", 512),
+		//mincol
+		formatT("1000", "~4B", 8),
+		formatT("      1000", "~10B", 8),
+		formatT("1", "~0B", 1),
+		formatT("111", "~2B", 7),
+		//padchar
+		formatT("%111", "~4,'%B", 7),
+		formatT("🥭🥭🥭🥭1000", "~8,'🥭B", 8),
+		//commaInterval
+		formatT("1000", "~,,,0:B", 8),
+		formatT("1,0,0,0", "~,,,1:B", 8),
+		formatT("-10,00", "~,,,2:B", -8),
+		formatT("+10,00", "~,,,2:@B", 8),
+		//commaChar
+		formatT("1000", "~,,'.,0:B", 8),
+		formatT("1.0.0.0", "~,,'.,1:B", 8),
+		formatT("-10.00", "~,,'.,2:B", -8),
+		formatT("+10.00", "~,,'.,2:@B", 8),
+		//all together now
+		formatT("####+10🥭01", "~10,'#,'🥭,2:@B", 9),
+		//errs
+		formatT("~!b(string=foo)", "~b", "foo"),
+	}
+	runTests(t, tcs)
+}
+
 func Test_A(t *testing.T) {
 	tcs := []formatTest{
 		formatT("Hello", "~a", "Hello"),
