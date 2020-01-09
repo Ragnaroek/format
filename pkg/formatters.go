@@ -56,15 +56,30 @@ func applyTilde(_ interface{}, d *directive, output *strings.Builder) string {
 	return strings.Repeat("~", param)
 }
 
+func applyD(arg interface{}, d *directive, _ *strings.Builder) string {
+	value, ok := valueInt64(arg, d)
+	if !ok {
+		return typeError(d.char, arg)
+	}
+	return intFormat(d, value, 10, 0)
+}
+
+func applyB(arg interface{}, d *directive, _ *strings.Builder) string {
+	return "B"
+}
+
+func applyO(arg interface{}, d *directive, _ *strings.Builder) string {
+	return "O"
+}
+
+func applyX(arg interface{}, d *directive, _ *strings.Builder) string {
+	return "X"
+}
+
 func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
-	var value int64
-	switch v := arg.(type) {
-	case int64:
-		value = v
-	case int:
-		value = int64(v)
-	default:
-		return typeError('r', arg)
+	value, ok := valueInt64(arg, d)
+	if !ok {
+		return typeError(d.char, arg)
 	}
 
 	if len(d.prefixParam) == 0 {
@@ -79,19 +94,24 @@ func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
 	if !ok {
 		return numParamError(d, 10)
 	}
-	mincol, ok := numParam(1, d, 0)
+
+	return intFormat(d, value, radix, 1)
+}
+
+func intFormat(d *directive, value int64, radix int, argOffset int) string {
+	mincol, ok := numParam(argOffset, d, 0)
 	if !ok {
 		return numParamError(d, 0)
 	}
-	padchar, ok := charParam(2, d, ' ')
+	padchar, ok := charParam(argOffset+1, d, ' ')
 	if !ok {
 		return charParamError(d, ' ')
 	}
-	commaChar, ok := charParam(3, d, ',')
+	commaChar, ok := charParam(argOffset+2, d, ',')
 	if !ok {
 		return charParamError(d, ',')
 	}
-	commaInterval, ok := numParam(4, d, 3)
+	commaInterval, ok := numParam(argOffset+3, d, 3)
 	if !ok {
 		return numParamError(d, 3)
 	}
@@ -104,6 +124,19 @@ func applyR(arg interface{}, d *directive, _ *strings.Builder) string {
 		formatted = formatSeparator(formatted, commaInterval, commaChar)
 	}
 	return padLeft(formatted, mincol, padchar)
+}
+
+func valueInt64(arg interface{}, d *directive) (int64, bool) {
+	var value int64
+	switch v := arg.(type) {
+	case int64:
+		value = v
+	case int:
+		value = int64(v)
+	default:
+		return 0, false
+	}
+	return value, true
 }
 
 func padLeft(num string, mincol int, padchar rune) string {
@@ -907,10 +940,6 @@ func applyA(arg interface{}, d *directive, _ *strings.Builder) string {
 	default:
 		return typeError('a', arg)
 	}
-}
-
-func applyD(arg interface{}, d *directive, _ *strings.Builder) string {
-	return "D"
 }
 
 func applyCircumflex(arg interface{}, d *directive, _ *strings.Builder) string {

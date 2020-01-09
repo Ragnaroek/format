@@ -986,6 +986,60 @@ func Test_R_Args(t *testing.T) {
 		formatT("+10.00", "~10,,,'.,2:@R", 1000),
 		//all together now
 		formatT("####+10🥭03", "~10,10,'#,'🥭,2:@R", 1003),
+		//errs
+		formatT("~!r(prefix.num!=10)", "~'x,10,'#,'🥭,2:@r", 666),
+		formatT("~!r(prefix.num!=0)", "~10,'x,'#,'🥭,2:@r", 666),
+		formatT("~!r(prefix.char!= )", "~10,10,666,'🥭,2:@r", 666),
+		formatT("~!r(prefix.char!=,)", "~10,10,'#,666,2:@r", 666),
+		formatT("~!r(prefix.num!=3)", "~10,10,'#,'🥭,'x:@r", 666),
+	}
+	runTests(t, tcs)
+}
+
+func Test_D(t *testing.T) {
+	tcs := []formatTest{
+		formatT("+1", "~@D", 1),
+		formatT("-1", "~@D", -1),
+		formatT("+0", "~@D", 0),
+		//:
+		formatT("1", "~:D", 1),
+		formatT("100", "~:D", 100),
+		formatT("-100", "~:D", -100),
+		formatT("1,000", "~:D", 1000),
+		formatT("1,666,777", "~:D", 1666777),
+		formatT("666,777", "~:D", 666777),
+		formatT("-666,777", "~:D", -666777),
+		formatT("-9,888,777,666", "~:D", -9888777666),
+		formatT("9,888,777,666", "~:D", 9888777666),
+		//:@
+		formatT("+100", "~:@D", 100),
+		formatT("+1,000", "~:@D", 1000),
+		formatT("+666,777", "~:@D", 666777),
+		formatT("-666,777", "~:@D", -666777),
+		formatT("-9,888,777,666", "~:@D", -9888777666),
+		formatT("+9,888,777,666", "~@:D", 9888777666),
+		//mincol
+		formatT("1000", "~4D", 1000),
+		formatT("      1000", "~10D", 1000),
+		formatT("1", "~0D", 1),
+		formatT("100", "~2D", 100),
+		//padchar
+		formatT("%666", "~4,'%D", 666),
+		formatT("🥭🥭🥭🥭6666", "~8,'🥭D", 6666),
+		//commaInterval
+		formatT("1000", "~,,,0:D", 1000),
+		formatT("1,0,0,0", "~,,,1:D", 1000),
+		formatT("-10,00", "~,,,2:D", -1000),
+		formatT("+10,00", "~,,,2:@D", 1000),
+		//commaChar
+		formatT("1000", "~,,'.,0:D", 1000),
+		formatT("1.0.0.0", "~,,'.,1:D", 1000),
+		formatT("-10.00", "~,,'.,2:D", -1000),
+		formatT("+10.00", "~,,'.,2:@D", 1000),
+		//all together now
+		formatT("####+10🥭03", "~10,'#,'🥭,2:@D", 1003),
+		//errs
+		formatT("~!d(string=foo)", "~d", "foo"),
 	}
 	runTests(t, tcs)
 }

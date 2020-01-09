@@ -15,6 +15,10 @@ func init() {
 	AddControl(NewNoArgControlDef('|', applyVerticalBar))
 	AddControl(NewNoArgControlDef('~', applyTilde))
 	AddControl(NewControlDef('r', applyR))
+	AddControl(NewControlDef('d', applyD))
+	AddControl(NewControlDef('b', applyB))
+	AddControl(NewControlDef('o', applyO))
+	AddControl(NewControlDef('x', applyX))
 
 	//Untested yet
 	AddRepeatingControl('{', '}')
