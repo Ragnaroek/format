@@ -1,6 +1,8 @@
 package format
 
 import (
+	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -943,6 +945,74 @@ func maxi(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
+	w, ok := numParam(0, d, -1)
+	if !ok {
+		return numParamError(d, 0)
+	}
+	de, ok := numParam(1, d, -1)
+	if !ok {
+		return numParamError(d, 0)
+	}
+	k, ok := numParam(2, d, 0)
+	if !ok {
+		return numParamError(d, 0)
+	}
+	overflowchar, ok := charParamNoDefault(3, d)
+	if !ok {
+		return charParamError(d, ' ')
+	}
+	padchar, ok := charParam(4, d, ' ')
+	if !ok {
+		return charParamError(d, ' ')
+	}
+
+	fmt.Printf("%#v, %#v, %#v, %#v, %#v", w, de, k, overflowchar, padchar)
+
+	var formatted string
+	switch v := arg.(type) {
+	case int64:
+		formatted = strconv.FormatInt(v, 10) + ".0"
+	case int:
+		formatted = strconv.FormatInt(int64(v), 10) + ".0"
+	case float64:
+		formatted = formatFloat(v, w)
+	case float32:
+		formatted = formatFloat(float64(v), w)
+	default:
+		return typeError('f', arg)
+	}
+
+	return formatted
+}
+
+func formatFloat(f float64, w int) string {
+	fomt := strconv.FormatFloat(f, 'f', -1, 64)
+	if math.Mod(f, 1.0) == 0 {
+		return fomt + ".0"
+	}
+
+	if w == -1 {
+		return fomt
+	} else if w < 2 {
+		if f < 1.0 {
+			return fomt[1:]
+		}
+		return fomt
+	} else {
+		if len(fomt) > w {
+			fmt.Printf("### w = %d\n", w)
+			rounded := strconv.FormatFloat(f, 'f', w-1, 64)
+			if f < 1.0 {
+				return rounded[1:]
+			}
+			return rounded
+		}
+		return fomt
+	}
+	//TODO
 }
 
 func applyA(arg interface{}, d *directive, _ *strings.Builder) string {

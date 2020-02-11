@@ -55,16 +55,31 @@ func charParam(ix int, d *directive, defaultValue rune) (rune, bool) {
 	if ix > len(d.prefixParam)-1 {
 		return defaultValue, true
 	}
-	return extractCharParam(ix, d, defaultValue)
+	r, ok := extractCharParam(ix, d)
+	if r == nil {
+		return defaultValue, ok
+	}
+	return *r, ok
 }
 
-func extractCharParam(ix int, d *directive, defaultValue rune) (rune, bool) {
+func charParamNoDefault(ix int, d *directive) (*rune, bool) {
+	if ix > len(d.prefixParam)-1 {
+		return nil, true
+	}
+	return extractCharParam(ix, d)
+}
+
+func extractCharParam(ix int, d *directive) (*rune, bool) {
 	param := d.prefixParam[ix]
 	if param.empty {
-		return defaultValue, true
+		return nil, true
 	}
 	if param.numParam != 0 {
-		return '\x00', false
+		return nil, false
 	}
-	return param.charParam, true
+	return &param.charParam, true
+}
+
+func ptrRune(r rune) *rune {
+	return &r
 }

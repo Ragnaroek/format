@@ -19,6 +19,7 @@ func init() {
 	AddControl(NewControlDef('b', applyB))
 	AddControl(NewControlDef('o', applyO))
 	AddControl(NewControlDef('x', applyX))
+	AddControl(NewControlDef('f', applyF))
 
 	//Untested yet
 	AddRepeatingControl('{', '}')

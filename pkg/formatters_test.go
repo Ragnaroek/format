@@ -1188,6 +1188,24 @@ func Test_X(t *testing.T) {
 	runTests(t, tcs)
 }
 
+func Test_F(t *testing.T) {
+	tcs := []formatTest{
+		formatT("666.0", "~f", 666),
+		formatT("666.0", "~f", 666.0),
+		formatT("-666.0", "~f", -666),
+		formatT("666.123", "~f", 666.123),
+		formatT("0.3333333333333333", "~f", 1.0/3.0),
+		//w
+		formatT(".3333333333333333", "~1f", 1.0/3.0),
+		formatT("6.333333333333333", "~1f", 1.0/3.0+6.0),
+		formatT(".125", "~1f", 0.125),
+		formatT("1.125", "~1f", 1.125),
+		formatT("0.125", "~5f", 0.125),
+		formatT(".2", "~2f", 0.155555),
+	}
+	runTests(t, tcs)
+}
+
 func Test_A(t *testing.T) {
 	tcs := []formatTest{
 		formatT("Hello", "~a", "Hello"),
