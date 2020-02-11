@@ -969,14 +969,14 @@ func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
 		return charParamError(d, ' ')
 	}
 
-	fmt.Printf("%#v, %#v, %#v, %#v, %#v", w, de, k, overflowchar, padchar)
+	fmt.Printf("%#v, %#v, %#v, %#v, %#v\n", w, de, k, overflowchar, padchar)
 
 	var formatted string
 	switch v := arg.(type) {
 	case int64:
-		formatted = strconv.FormatInt(v, 10) + ".0"
+		formatted = formatInt(v, w)
 	case int:
-		formatted = strconv.FormatInt(int64(v), 10) + ".0"
+		formatted = formatInt(int64(v), w)
 	case float64:
 		formatted = formatFloat(v, w)
 	case float32:
@@ -988,11 +988,19 @@ func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
 	return formatted
 }
 
-func formatFloat(f float64, w int) string {
-	fomt := strconv.FormatFloat(f, 'f', -1, 64)
-	if math.Mod(f, 1.0) == 0 {
+func formatInt(v int64, w int) string {
+	fomt := strconv.FormatInt(v, 10)
+	if w == -1 || len(fomt) <= w-2 {
 		return fomt + ".0"
 	}
+	return fomt + "."
+}
+
+func formatFloat(f float64, w int) string {
+	if math.Mod(f, 1.0) == 0 {
+		return formatInt(int64(f), w)
+	}
+	fomt := strconv.FormatFloat(f, 'f', -1, 64)
 
 	if w == -1 {
 		return fomt
@@ -1003,16 +1011,16 @@ func formatFloat(f float64, w int) string {
 		return fomt
 	} else {
 		if len(fomt) > w {
-			fmt.Printf("### w = %d\n", w)
-			rounded := strconv.FormatFloat(f, 'f', w-1, 64)
 			if f < 1.0 {
+				rounded := strconv.FormatFloat(f, 'f', w-1, 64)
 				return rounded[1:]
 			}
+			lenInt := int(math.Log10(f) + 1)
+			rounded := strconv.FormatFloat(f, 'f', w-1-lenInt, 64)
 			return rounded
 		}
 		return fomt
 	}
-	//TODO
 }
 
 func applyA(arg interface{}, d *directive, _ *strings.Builder) string {

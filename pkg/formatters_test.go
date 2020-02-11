@@ -1191,10 +1191,12 @@ func Test_X(t *testing.T) {
 func Test_F(t *testing.T) {
 	tcs := []formatTest{
 		formatT("666.0", "~f", 666),
+		formatT("666.0", "~f", int64(666)),
 		formatT("666.0", "~f", 666.0),
 		formatT("-666.0", "~f", -666),
 		formatT("666.123", "~f", 666.123),
 		formatT("0.3333333333333333", "~f", 1.0/3.0),
+		formatT("0.125", "~f", float32(0.125)),
 		//w
 		formatT(".3333333333333333", "~1f", 1.0/3.0),
 		formatT("6.333333333333333", "~1f", 1.0/3.0+6.0),
@@ -1202,6 +1204,12 @@ func Test_F(t *testing.T) {
 		formatT("1.125", "~1f", 1.125),
 		formatT("0.125", "~5f", 0.125),
 		formatT(".2", "~2f", 0.155555),
+		formatT("1.345", "~5f", 1.3454),
+		formatT("666.6789", "~8f", 666.6788682937),
+		formatT("666.0", "~5f", 666.0),
+		formatT("666.", "~4f", 666.0),
+		//errs
+		formatT("~!f(string=not-a-float)", "~f", "not-a-float"),
 	}
 	runTests(t, tcs)
 }
