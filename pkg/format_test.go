@@ -1,9 +1,8 @@
 package format
 
 import (
+	"reflect"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestParseFormatGraph(t *testing.T) {
@@ -74,11 +73,15 @@ func TestParseFormatGraph(t *testing.T) {
 			var nodeExpected ftoken
 			graph := buildGraph(tc.expectedTokens, tc.expectedRepeation)
 			nodeExpected = &graph
-			assert.NotNil(t, node)
+			if node == nil {
+				t.Errorf("node nil")
+			}
 
 			var i = 0
 			for node.Next() != nil {
-				assert.Equal(t, nodeExpected, node, "expected %#v, actual %#v", nodeExpected, node)
+				if !reflect.DeepEqual(nodeExpected, node) {
+					t.Errorf("expected %#v, actual %#v", nodeExpected, node)
+				}
 				node = node.Next()
 				nodeExpected = nodeExpected.Next()
 				i++
