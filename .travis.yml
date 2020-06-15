@@ -4,7 +4,7 @@ go:
   - "1.14"
 
 before_install:
-  - go get -t -v ./...
+  - go get -t -v ./pkg/...
 
 script:
   - go test ./pkg/... -race -coverprofile=coverage.txt -covermode=atomic
