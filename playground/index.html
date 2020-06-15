@@ -30,6 +30,21 @@
     <body>
         <main id="wasm"></main>
         
-        format.Sformat(<input type="text" class="form-control" placeholder="Search for...">, <input type="text" class="form-control" placeholder="Search for...">)
+        <h1 style="margin-left:20px" >Format Playground</h1>
+        
+        <div style="margin-left:20px; margin-top:30px">
+          format.Sformat(
+           <input type="text" style="display:inline-block" placeholder="enter format directive">,
+           <input type="text" style="display:inline-block" placeholder="Search for...">
+          )
+        </div>
+        
+        <div class="panel panel-info" style="margin:20px">
+          <div class="panel-heading">
+            <h3 class="panel-title">Outputs</h3>
+          </div>
+          <div class="panel-body"></div>
+        </div>
+        
     </body>
 </html>
