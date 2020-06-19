@@ -31,6 +31,7 @@ func jsSformat(this js.Value, args []js.Value) interface{} {
 }
 
 func toGoVal(val js.Value) interface{} {
+
 	switch val.Type() {
 	case js.TypeUndefined:
 		return nil
@@ -44,7 +45,7 @@ func toGoVal(val js.Value) interface{} {
 		return val.String()
 	default:
 		//TODO Support array and map types
-		panic("unsupported type")
+		panic(fmt.Sprintf("unsupported type: %s", val.Type()))
 	}
 }
 

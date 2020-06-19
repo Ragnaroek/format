@@ -16,7 +16,6 @@ function onDirectiveChange (text) {
   var paramElem = document.getElementById('params')
   var params = paramElem.children
   var diffCnt = directives - (params.length / 2)
-  console.log('diffCnt', diffCnt)
   if (diffCnt < 0) {
     // remove
     for (var i = diffCnt; i < 0; i++) {
@@ -33,11 +32,20 @@ function onDirectiveChange (text) {
 }
 
 function format () {
-  // TODO collect parameters and convert them to the correct types. Supply them to the function.
-
   var directive = document.getElementById('directive').value
-  console.log('directive = ', directive)
-  var formatted = Sformat(directive)
+  var paramsHtml = document.getElementById('params').children
+
+  var params = []
+  params.push(directive)
+
+  for (var i = 0; i < paramsHtml.length; i++) {
+    var param = paramsHtml.item(i)
+    if (param.tagName == 'INPUT') {
+      params.push(param.value)
+    }
+  }
+
+  var formatted = Sformat.apply(null, params)
   var resultNode = document.createElement('div')
   resultNode.insertAdjacentText('beforeend', `format.Sformat("${directive}") => ${formatted}`)
   document.getElementById('output').prepend(resultNode)
