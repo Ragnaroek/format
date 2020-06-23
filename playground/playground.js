@@ -1,3 +1,6 @@
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
 
 function onDirectiveChange (text) {
   let directives = 0
