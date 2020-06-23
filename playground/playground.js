@@ -56,7 +56,7 @@ function format () {
       for (let z = 0; z < param.children.length; z++) {
         let subParam = param.children.item(z)
         if (subParam.tagName == 'INPUT') {
-          params.push(subParam.value)
+          params.push(normaliseValue(subParam.value))
         }
       }
     }
@@ -66,4 +66,19 @@ function format () {
   let resultNode = document.createElement('div')
   resultNode.insertAdjacentText('beforeend', `format.Sformat("${directive}") => ${formatted}`)
   document.getElementById('output').prepend(resultNode)
+}
+
+// Removes "" that forces a string type and converts to numbers (if possible)
+function normaliseValue (val) {
+  let num = Number(val)
+  if (isNaN(num)) {
+    if (val.length >= 2) {
+      if (val.charAt(0) == '"' && val.charAt(val.length - 1) == '"') {
+        return val.substring(1, val.length - 1)
+      }
+      return val
+    }
+  } else {
+    return num
+  }
 }
