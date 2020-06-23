@@ -67,7 +67,7 @@ function format () {
 
   let formatted = Sformat.apply(null, params)
   let resultNode = document.createElement('div')
-  resultNode.insertAdjacentText('beforeend', `format.Sformat("${directive}") => ${formatted}`)
+  resultNode.insertAdjacentText('beforeend', `ft.Sformat("${directive}") => ${formatted}`)
   document.getElementById('output').prepend(resultNode)
 }
 
