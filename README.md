@@ -20,8 +20,8 @@ Implemented:
 
 |~ |Name     |Prefix args       |:       |@        |:@        |Note                  |
 |--|---------|------------------|--------|---------|----------|----------------------|
-|[~c](/https://www.hexstreamsoft.com/articles/common-lisp-format-reference/format-directives/#~C_character) |Char     |                  |Pretty  |Escape   |          |:@ not yet implemented|
-|[~%](https://www.hexstreamsoft.com/articles/common-lisp-format-reference/format-directives/#~percent_newline)|Newline  |# newline         |
-|[~&](https://www.hexstreamsoft.com/articles/common-lisp-format-reference/format-directives/#~ampersand_fresh-line)|Freshline|# lines           |
-|[~`\|`](https://www.hexstreamsoft.com/articles/common-lisp-format-reference/format-directives/#~vertical-line_page)|Page  |# pages           |
+|[~c](http://www.lispworks.com/documentation/HyperSpec/Body/22_caa.htm) |Char     |                  |Pretty  |Escape   |          |:@ not yet implemented|
+|[~%](http://www.lispworks.com/documentation/HyperSpec/Body/22_cab.htm)|Newline  |# newline         |
+|[~&](http://www.lispworks.com/documentation/HyperSpec/Body/22_cac.htm)|Freshline|# lines           |
+|[~`\|`](http://www.lispworks.com/documentation/HyperSpec/Body/22_cad.htm)|Page  |# pages           |
 |[~~](http://www.lispworks.com/documentation/HyperSpec/Body/22_cae.htm)|Tilde    |# ~               |
