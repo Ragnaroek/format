@@ -27,7 +27,7 @@ func jsSformat(this js.Value, args []js.Value) interface{} {
 		goVals = append(goVals, toGoVal(valArg))
 	}
 
-	return format.Sformat(args[0].String(), goVals...)
+	return ft.Sformat(args[0].String(), goVals...)
 }
 
 func toGoVal(val js.Value) interface{} {
