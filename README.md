@@ -72,4 +72,4 @@ No optimisation was done so far, this is the next step. With the benchmark resul
 
 # Thanks
 
-This software is open source (GPLv3) and was made while listening to a lot of [Rage against the Machine](https://www.last.fm/music/Rage+Against+the+Machine) ✊🏿
+This software is open source (LGPLv3) and was made while listening to a lot of [Rage against the Machine](https://www.last.fm/music/Rage+Against+the+Machine) ✊🏿
