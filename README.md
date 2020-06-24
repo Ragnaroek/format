@@ -10,13 +10,31 @@ This library has the goal to bring the Common Lisp format directive to Go. This 
 
 For a nice introduction to the Common Lisp format see https://en.wikipedia.org/wiki/Format_(Common_Lisp).
 
-<TODO: Example how it looks in Go>
+## Example Code
 
-<TODO Add Playground ref here with image>
+```go
+import "github.com/ragnaroek/format/pkg"
 
-<TODO: Summary table implementation status with link to original table>
+ft.Sformat("~8r", 8) //returns "10"
+ft.Sformat("~10,'#,'🥭,2:@X", 4099) //returns "####+10🥭03"
 
-Implemented:
+ft.Sformat("~r", 4343637058903381868) //returns "four quintillion three hundred forty-three quadrillion six hundred thirty-seven trillion fifty-eight billion nine hundred three million three hundred eighty-one thousand eight hundred sixty-eight"
+ft.Sformat("~:@r", 2799) //returns "MMDCCLXXXXVIIII"
+ft.Sformat("~@r", 2799) //returns "MMDCCXCIX"
+```
+
+## Playground
+
+Since the format directives can get complicated and the best way to figure them output is to play around with them the `format` playground was created:
+
+[![playground.png](https://i.postimg.cc/wx0qgqWG/playground.png)](https://postimg.cc/xqNDP2Vv)
+
+The playground is hosted here: https://ragnaroek.github.io/format/
+The library is compiled to WASM to make it run on the browser.
+
+## Implementation Status
+
+The directives listed below are already implemented:
 
 |~ |Name     |Prefix args       |:       |@        |:@        |Note                  |
 |--|---------|------------------|--------|---------|----------|----------------------|
@@ -25,3 +43,16 @@ Implemented:
 |[~&](http://www.lispworks.com/documentation/HyperSpec/Body/22_cac.htm)|Freshline|# lines           |
 |[~`\|`](http://www.lispworks.com/documentation/HyperSpec/Body/22_cad.htm)|Page  |# pages           |
 |[~~](http://www.lispworks.com/documentation/HyperSpec/Body/22_cae.htm)|Tilde    |# ~               |
+|[~r](http://www.lispworks.com/documentation/HyperSpec/Body/22_cba.htm)|Radix|mincol, padchar, comma-char, comma-interval|Ordinal|Roman|Old Roman||
+|[~d](http://www.lispworks.com/documentation/HyperSpec/Body/22_cbb.htm)|Decimal|mincol, padchar, comma-char, comma-interval|
+|[~b](http://www.lispworks.com/documentation/HyperSpec/Body/22_cbc.htm)|Binary|mincol, padchar, comma-char, comma-interval|
+|[~o](http://www.lispworks.com/documentation/HyperSpec/Body/22_cbd.htm)|Octal|mincol, padchar, comma-char, comma-interval|
+|[~x](http://www.lispworks.com/documentation/HyperSpec/Body/22_cbe.htm)|Hexadecimal|mincol, padchar, comma-char, comma-interval|
+
+This table is derived from https://www.hexstreamsoft.com/articles/common-lisp-format-reference/clhs-summary/#subsections-summary-table, which was also a great help in the implementation of the directives so far. Many thanks to Jean-Philippe Paradis.
+
+All other directives not mentioned in the table are not implemented yet.
+
+# Thanks
+
+This software is open source (GPLv3) and was made while listening to a lot of [Rage against the Machine](https://www.last.fm/music/Rage+Against+the+Machine) ✊🏿
