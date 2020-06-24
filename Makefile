@@ -1,6 +1,9 @@
 test:
 	go test ./pkg/...
 
+bench:
+	go test ./benchmarks/... -bench=.
+	
 playground:
 	GOOS=js GOARCH=wasm go build -o playground/format.wasm cmd/playground/main.go
 	

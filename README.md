@@ -53,6 +53,23 @@ This table is derived from https://www.hexstreamsoft.com/articles/common-lisp-fo
 
 All other directives not mentioned in the table are not implemented yet.
 
+## Current work-in-progress
+
+Optimisation! `format` is currently ~4 times slower than `fmt`:
+```
+goos: darwin
+goarch: amd64
+pkg: github.com/ragnaroek/format/benchmarks
+BenchmarkFmtSimple-12       	19701156	        58.6 ns/op
+BenchmarkFmtLong-12         	 5078179	       237 ns/op
+BenchmarkFormatSimple-12    	 6389026	       189 ns/op
+BenchmarkFormatLong-12      	 1304218	       931 ns/op
+```
+
+You can run the benchmarks yourself with `make bench`.
+
+No optimisation was done so far, this is the next step. With the benchmark results above as the baseline.
+
 # Thanks
 
 This software is open source (GPLv3) and was made while listening to a lot of [Rage against the Machine](https://www.last.fm/music/Rage+Against+the+Machine) ✊🏿
