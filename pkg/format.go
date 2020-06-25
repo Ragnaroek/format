@@ -7,13 +7,19 @@ import (
 	"unicode"
 )
 
+var fgCache = make(map[string]root, 0)
+
 func Format(format string, a ...interface{}) {
 	print(Sformat(format, a...))
 }
 
 func Sformat(format string, a ...interface{}) string {
 	//TODO cache format graph
-	fg := parseFormatGraph(format)
+	fg, found := fgCache[format]
+	if !found {
+		fg = parseFormatGraph(format)
+		fgCache[format] = fg
+	}
 	return applyFormat(fg, a...)
 }
 

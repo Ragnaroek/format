@@ -55,20 +55,17 @@ All other directives not mentioned in the table are not implemented yet.
 
 ## Current work-in-progress
 
-Optimisation! `format` is currently ~4 times slower than `fmt`:
+Implementing more directives.
+
+Optimisation! `format` is currently ~25% times slower than `fmt`:
 ```
-goos: darwin
-goarch: amd64
-pkg: github.com/ragnaroek/format/benchmarks
-BenchmarkFmtSimple-12       	19701156	        58.6 ns/op
-BenchmarkFmtLong-12         	 5078179	       237 ns/op
-BenchmarkFormatSimple-12    	 6389026	       189 ns/op
-BenchmarkFormatLong-12      	 1304218	       931 ns/op
+BenchmarkFmtSimple-12       	18712560	        63.4 ns/op
+BenchmarkFmtLong-12         	 4741552	       263 ns/op
+BenchmarkFormatSimple-12    	14139633	        81.1 ns/op
+BenchmarkFormatLong-12      	 3741561	       318 ns/op
 ```
 
 You can run the benchmarks yourself with `make bench`.
-
-No optimisation was done so far, this is the next step. With the benchmark results above as the baseline.
 
 # Thanks
 
