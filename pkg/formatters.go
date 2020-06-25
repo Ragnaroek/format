@@ -969,7 +969,7 @@ func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
 		return charParamError(d, ' ')
 	}
 
-	fmt.Printf("%#v, %#v, %#v, %#v, %#v\n", w, de, k, overflowchar, padchar)
+	fmt.Printf("%#v, %#v, %#v, %#v\n", de, k, overflowchar, padchar)
 
 	var formatted string
 	switch v := arg.(type) {
@@ -1012,15 +1012,21 @@ func formatFloat(f float64, w int) string {
 	} else {
 		if len(fomt) > w {
 			if f < 1.0 {
-				rounded := strconv.FormatFloat(f, 'f', w-1, 64)
+				rounded := strconv.FormatFloat(round(f, w-1), 'f', -1, 64)
 				return rounded[1:]
 			}
 			lenInt := int(math.Log10(f) + 1)
-			rounded := strconv.FormatFloat(f, 'f', w-1-lenInt, 64)
+			rounded := strconv.FormatFloat(round(f, w-1-lenInt), 'f', -1, 64)
 			return rounded
 		}
 		return fomt
 	}
+}
+
+func round(f float64, precision int) float64 {
+	p := math.Pow10(precision)
+	s := f * p
+	return math.Round(s) / p
 }
 
 func applyA(arg interface{}, d *directive, _ *strings.Builder) string {

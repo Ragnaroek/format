@@ -14,7 +14,6 @@ func Format(format string, a ...interface{}) {
 }
 
 func Sformat(format string, a ...interface{}) string {
-	//TODO cache format graph
 	fg, found := fgCache[format]
 	if !found {
 		fg = parseFormatGraph(format)
