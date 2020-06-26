@@ -1218,6 +1218,14 @@ func Test_F(t *testing.T) {
 		formatT("1.125", "~6f", 1.125),
 		formatT("1.1", "~3f", 1.1),
 		formatT(".1", "~2f", 0.125),
+		//d
+		formatT("0.1", "~,1f", 0.125),
+		formatT("0.13", "~,2f", 0.125),
+		formatT("0.125", "~,3f", 0.125),
+		//dw
+		formatT(".1", "~2,1f", 0.125),
+		formatT("0.1", "~3,1f", 0.125),
+		formatT(".2", "~2,3f", 0.155),
 		//errs
 		formatT("~!f(string=not-a-float)", "~f", "not-a-float"),
 	}

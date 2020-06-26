@@ -969,7 +969,7 @@ func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
 		return charParamError(d, ' ')
 	}
 
-	fmt.Printf("%#v, %#v, %#v, %#v\n", de, k, overflowchar, padchar)
+	fmt.Printf("%#v, %#v, %#v\n", k, overflowchar, padchar)
 
 	var formatted string
 	switch v := arg.(type) {
@@ -978,9 +978,9 @@ func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
 	case int:
 		formatted = formatInt(int64(v), w)
 	case float64:
-		formatted = formatFloat(v, w)
+		formatted = formatFloat(v, w, de)
 	case float32:
-		formatted = formatFloat(float64(v), w)
+		formatted = formatFloat(float64(v), w, de)
 	default:
 		return typeError('f', arg)
 	}
@@ -996,11 +996,11 @@ func formatInt(v int64, w int) string {
 	return fomt + "."
 }
 
-func formatFloat(f float64, w int) string {
+func formatFloat(f float64, w, d int) string {
 	if math.Mod(f, 1.0) == 0 {
 		return formatInt(int64(f), w)
 	}
-	fomt := strconv.FormatFloat(f, 'f', -1, 64)
+	fomt := strconv.FormatFloat(round(f, d), 'f', -1, 64)
 
 	if w == -1 {
 		return fomt
@@ -1024,6 +1024,9 @@ func formatFloat(f float64, w int) string {
 }
 
 func round(f float64, precision int) float64 {
+	if precision <= 0 {
+		return f
+	}
 	p := math.Pow10(precision)
 	s := f * p
 	return math.Round(s) / p
