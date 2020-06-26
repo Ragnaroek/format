@@ -969,18 +969,18 @@ func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
 		return charParamError(d, ' ')
 	}
 
-	fmt.Printf("%#v, %#v, %#v\n", k, overflowchar, padchar)
+	fmt.Printf("%#v, %#v\n", overflowchar, padchar)
 
 	var formatted string
 	switch v := arg.(type) {
 	case int64:
-		formatted = formatInt(v, w)
+		formatted = formatInt(v*pow10i(k), w)
 	case int:
-		formatted = formatInt(int64(v), w)
+		formatted = formatInt(int64(v)*pow10i(k), w)
 	case float64:
-		formatted = formatFloat(v, w, de)
+		formatted = formatFloat(v*math.Pow10(k), w, de)
 	case float32:
-		formatted = formatFloat(float64(v), w, de)
+		formatted = formatFloat(float64(v)*math.Pow10(k), w, de)
 	default:
 		return typeError('f', arg)
 	}
@@ -1021,6 +1021,15 @@ func formatFloat(f float64, w, d int) string {
 		}
 		return fomt
 	}
+}
+
+func pow10i(e int) int64 {
+	var r int64 = 1
+	for e != 0 {
+		r *= 10
+		e -= 1
+	}
+	return r
 }
 
 func round(f float64, precision int) float64 {
