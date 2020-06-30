@@ -4,6 +4,14 @@ import (
 	"testing"
 )
 
+//Some tests with edge cases, not really belonging to a directiv
+func Test_General(t *testing.T) {
+	tcs := []formatTest{
+		formatT("64,,d", "~x,,d", 100), //looks broken, but totally valid
+	}
+	runTests(t, tcs)
+}
+
 //~c
 func Test_C(t *testing.T) {
 	tcs := []formatTest{
