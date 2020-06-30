@@ -969,7 +969,7 @@ func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
 		return charParamError(d, ' ')
 	}
 
-	fmt.Printf("%#v, %#v\n", overflowchar, padchar)
+	fmt.Printf("%#v\n", padchar)
 
 	var formatted string
 	switch v := arg.(type) {
@@ -978,9 +978,9 @@ func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
 	case int:
 		formatted = formatInt(int64(v)*pow10i(k), w)
 	case float64:
-		formatted = formatFloat(v*math.Pow10(k), w, de)
+		formatted = formatFloat(v*math.Pow10(k), w, de, overflowchar)
 	case float32:
-		formatted = formatFloat(float64(v)*math.Pow10(k), w, de)
+		formatted = formatFloat(float64(v)*math.Pow10(k), w, de, overflowchar)
 	default:
 		return typeError('f', arg)
 	}
@@ -996,7 +996,7 @@ func formatInt(v int64, w int) string {
 	return fomt + "."
 }
 
-func formatFloat(f float64, w, d int) string {
+func formatFloat(f float64, w, d int, overflowchar *rune) string {
 	if math.Mod(f, 1.0) == 0 {
 		return formatInt(int64(f), w)
 	}
@@ -1004,19 +1004,27 @@ func formatFloat(f float64, w, d int) string {
 
 	if w == -1 {
 		return fomt
-	} else if w < 2 {
+	} else if w <= 1 { //has to overflow, because there is not enough room for a . and a digit
+		if overflowchar != nil {
+			return string(*overflowchar)
+		}
 		if f < 1.0 {
 			return fomt[1:]
 		}
 		return fomt
 	} else {
 		if len(fomt) > w {
-			if f < 1.0 {
-				rounded := strconv.FormatFloat(round(f, w-1), 'f', -1, 64)
-				return rounded[1:]
+			if overflowchar != nil {
+				return strings.Repeat(string(*overflowchar), w)
 			}
-			lenInt := int(math.Log10(f) + 1)
-			rounded := strconv.FormatFloat(round(f, w-1-lenInt), 'f', -1, 64)
+			var rounded string
+			if f < 1.0 {
+				rounded = strconv.FormatFloat(round(f, w-1), 'f', -1, 64)
+				rounded = rounded[1:]
+			} else {
+				lenInt := int(math.Log10(f) + 1)
+				rounded = strconv.FormatFloat(round(f, w-1-lenInt), 'f', -1, 64)
+			}
 			return rounded
 		}
 		return fomt

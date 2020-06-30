@@ -1234,6 +1234,11 @@ func Test_F(t *testing.T) {
 		formatT("6600.0", "~,,2f", float64(66.0)),
 		formatT("1.1", "~,1,1f", 0.111),
 		formatT("1.11", "~1,,1f", 0.111),
+		//overflowchar
+		formatT("#", "~1,,,'#f", 0.111),
+		formatT("##", "~2,5,,'#f", 0.111),
+		formatT("####", "~4,5,,'#f", 0.111),
+		formatT("xxx", "~3,3,,'xf", 0.111),
 		//errs
 		formatT("~!f(string=not-a-float)", "~f", "not-a-float"),
 	}
