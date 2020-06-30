@@ -1,7 +1,6 @@
 package ft
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -151,14 +150,6 @@ func valueInt64(arg interface{}, d *directive) (int64, bool) {
 		return 0, false
 	}
 	return value, true
-}
-
-func padLeft(num string, mincol int, padchar rune) string {
-	pad := mincol - len([]rune(num))
-	if pad > 0 {
-		return strings.Repeat(string(padchar), pad) + num
-	}
-	return num
 }
 
 func formatSeparator(num string, interval int, sepChar rune) string {
@@ -969,8 +960,6 @@ func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
 		return charParamError(d, ' ')
 	}
 
-	fmt.Printf("%#v\n", padchar)
-
 	var formatted string
 	switch v := arg.(type) {
 	case int64:
@@ -985,7 +974,7 @@ func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
 		return typeError('f', arg)
 	}
 
-	return formatted
+	return padLeft(formatted, w, padchar)
 }
 
 func formatInt(v int64, w int) string {

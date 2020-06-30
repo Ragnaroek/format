@@ -3,6 +3,7 @@ package ft
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 func romanError(dirChar rune) string {
@@ -82,4 +83,12 @@ func extractCharParam(ix int, d *directive) (*rune, bool) {
 
 func ptrRune(r rune) *rune {
 	return &r
+}
+
+func padLeft(num string, mincol int, padchar rune) string {
+	pad := mincol - len([]rune(num))
+	if pad > 0 {
+		return strings.Repeat(string(padchar), pad) + num
+	}
+	return num
 }

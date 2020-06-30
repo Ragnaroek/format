@@ -16,3 +16,9 @@ func BenchmarkFmtLong(b *testing.B) {
 		fmt.Sprintf("%d%s%v%d%d%d%s", 666, "foo", "debug", 6, 6, 6, "test string, a little longer")
 	}
 }
+
+func BenchmarkFmtFloat(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		fmt.Sprintf("%05.2f", 1.111)
+	}
+}

@@ -5,6 +5,14 @@ Run on:
 - Processor: 2,6 GHz 6-Core Intel Core i7
 - Memory: 32 GB 2400 MHz DDR4
 
+## Floating point performance added
+BenchmarkFmtSimple-12       	18428300	        61.2 ns/op
+BenchmarkFmtLong-12         	 4870514	       250 ns/op
+BenchmarkFmtFloat-12        	 3802862	       313 ns/op
+BenchmarkFormatSimple-12    	16296456	        73.9 ns/op
+BenchmarkFormatLong-12      	 3836730	       309 ns/op
+BenchmarkFormatFloat-12     	 3657698	       326 ns/op
+
 ## Cached format graphs
 BenchmarkFmtSimple-12       	18712560	        63.4 ns/op
 BenchmarkFmtLong-12         	 4741552	       263 ns/op

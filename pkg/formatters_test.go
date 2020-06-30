@@ -1214,8 +1214,8 @@ func Test_F(t *testing.T) {
 		formatT("0.3333333333333333", "~f", 1.0/3.0),
 		formatT("0.125", "~5f", 0.125),
 		formatT(".125", "~4f", 0.125),
-		formatT("0.125", "~6f", 0.125),
-		formatT("1.125", "~6f", 1.125),
+		formatT("0.125", "~5f", 0.125),
+		formatT("1.125", "~5f", 1.125),
 		formatT("1.1", "~3f", 1.1),
 		formatT(".1", "~2f", 0.125),
 		//d
@@ -1239,6 +1239,13 @@ func Test_F(t *testing.T) {
 		formatT("##", "~2,5,,'#f", 0.111),
 		formatT("####", "~4,5,,'#f", 0.111),
 		formatT("xxx", "~3,3,,'xf", 0.111),
+		//padchar
+		formatT("_____0.111", "~10,,,,'_f", 0.111),
+		formatT(" 0.125", "~6f", 0.125),
+		formatT(" 1.125", "~6f", 1.125),
+		//all together now
+		formatT("🥭🥭112.57", "~8,2,2,'#,'🥭f", 1.12566),
+		formatT("🔥🔥🔥", "~3,5,,'🔥,'🥭f", 1.12566),
 		//errs
 		formatT("~!f(string=not-a-float)", "~f", "not-a-float"),
 	}
