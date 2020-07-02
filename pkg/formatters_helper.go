@@ -92,3 +92,10 @@ func padLeft(num string, mincol int, padchar rune) string {
 	}
 	return num
 }
+
+func maxi(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}

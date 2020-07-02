@@ -931,13 +931,6 @@ func nameTenCardinal(tenIn string) string {
 	}
 }
 
-func maxi(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
 	w, ok := numParam(0, d, -1)
 	if !ok {
@@ -967,9 +960,9 @@ func applyF(arg interface{}, d *directive, _ *strings.Builder) string {
 	case int:
 		formatted = formatInt(int64(v)*pow10i(k), w)
 	case float64:
-		formatted = formatFloat(v*math.Pow10(k), w, de, overflowchar)
+		formatted = formatFloat(v*math.Pow10(k), w, de, overflowchar, d.atMod)
 	case float32:
-		formatted = formatFloat(float64(v)*math.Pow10(k), w, de, overflowchar)
+		formatted = formatFloat(float64(v)*math.Pow10(k), w, de, overflowchar, d.atMod)
 	default:
 		return typeError('f', arg)
 	}
@@ -985,14 +978,14 @@ func formatInt(v int64, w int) string {
 	return fomt + "."
 }
 
-func formatFloat(f float64, w, d int, overflowchar *rune) string {
+func formatFloat(f float64, w, d int, overflowchar *rune, atMod bool) string {
 	if math.Mod(f, 1.0) == 0 {
 		return formatInt(int64(f), w)
 	}
-	fomt := strconv.FormatFloat(round(f, d), 'f', -1, 64)
+	fomt := strconv.FormatFloat(round(f, d), 'f', d, 64)
 
 	if w == -1 {
-		return fomt
+		return addPlus(fomt, atMod)
 	} else if w <= 1 { //has to overflow, because there is not enough room for a . and a digit
 		if overflowchar != nil {
 			return string(*overflowchar)
@@ -1000,24 +993,49 @@ func formatFloat(f float64, w, d int, overflowchar *rune) string {
 		if f < 1.0 {
 			return fomt[1:]
 		}
-		return fomt
+		return addPlus(fomt, atMod)
 	} else {
+		fomt = addPlus(fomt, atMod)
 		if len(fomt) > w {
-			if overflowchar != nil {
-				return strings.Repeat(string(*overflowchar), w)
-			}
 			var rounded string
 			if f < 1.0 {
-				rounded = strconv.FormatFloat(round(f, w-1), 'f', -1, 64)
+				dm := maxi(w-extraChars(atMod), d)
+				if dm < extraChars(atMod) {
+					dm = -1
+				}
+				rounded = strconv.FormatFloat(round(f, dm), 'f', dm, 64)
 				rounded = rounded[1:]
 			} else {
 				lenInt := int(math.Log10(f) + 1)
-				rounded = strconv.FormatFloat(round(f, w-1-lenInt), 'f', -1, 64)
+				dm := maxi(w-extraChars(atMod)-lenInt, d)
+				rounded = strconv.FormatFloat(round(f, dm), 'f', dm, 64)
+				if len(rounded) == lenInt { //if rounded degrades to an integer we have to add a . to distinguish from an int
+					rounded += "."
+				}
+			}
+			rounded = addPlus(rounded, atMod)
+
+			if overflowchar != nil && len(rounded) > w {
+				return strings.Repeat(string(*overflowchar), w)
 			}
 			return rounded
 		}
 		return fomt
 	}
+}
+
+func extraChars(atMod bool) int {
+	if atMod {
+		return 2
+	}
+	return 1
+}
+
+func addPlus(fomt string, atMod bool) string {
+	if atMod {
+		return "+" + fomt
+	}
+	return fomt
 }
 
 func pow10i(e int) int64 {
