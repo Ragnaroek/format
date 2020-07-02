@@ -1,6 +1,7 @@
 package ft
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -59,7 +60,7 @@ func parseFormatGraph(format string) root {
 			}
 			directive, skip, err := parseDirective(i, runes)
 			if err != nil {
-				panic(err) //TODO add err directive to graph, this will result in an error in the oupt
+				return errDir(err)
 			}
 			i += skip
 			curDirective.SetNext(&directive)
@@ -71,12 +72,12 @@ func parseFormatGraph(format string) root {
 			if directive.controlDef.repeatEnd {
 				n := len(parenStack) - 1
 				if n < 0 {
-					panic("no peer for repeat control found") //TODO add error directive
+					return errDir(errors.New("nopeer"))
 				}
 				popped := parenStack[n]
 				parenStack = parenStack[:n] //pop
 				if directive.controlDef.peerChar != popped.char {
-					panic(fmt.Sprintf("unbalanced nested controls, expected %c, got %c", directive.controlDef.peerChar, popped.char)) //TODO add error directive
+					return errDir(errors.New("balancepeer"))
 				}
 				directive.SetRepeatRef(popped)
 			}
@@ -99,7 +100,7 @@ func parseDirective(start int, format []rune) (directive, int, error) {
 
 	i := start //i always points to the character currently parsed
 	if format[i] != '~' {
-		return directive{}, 0, fmt.Errorf("unexpected start of format")
+		return directive{}, 0, fmt.Errorf("startofformat")
 	}
 	i++
 
@@ -195,6 +196,9 @@ func parseNum(start int, format []rune) (int, int, error) {
 	i := start
 	numStr := make([]rune, 0)
 	for {
+		if i >= len(format) {
+			return 0, 0, errors.New("endofformat")
+		}
 		if !unicode.IsDigit(format[i]) {
 			n, err := strconv.Atoi(string(numStr))
 			if err != nil {
@@ -213,6 +217,12 @@ func nextChar(i int, format []rune) (rune, error) {
 		return '0', fmt.Errorf("nextChar not found")
 	}
 	return format[i], nil
+}
+
+func errDir(err error) root {
+	r := root{}
+	r.SetNext(NewLiteral(generalError(err)))
+	return r
 }
 
 type ftoken interface {

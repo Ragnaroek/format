@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+func generalError(err error) string {
+	return fmt.Sprintf("~!err(%s)", err)
+}
+
 func romanError(dirChar rune) string {
 	return fmt.Sprintf("~!%c(roman range=[1,3999])", dirChar)
 }

@@ -1,6 +1,7 @@
 package ft
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 )
@@ -64,6 +65,11 @@ func TestParseFormatGraph(t *testing.T) {
 			expectedTokens:    []ftoken{NewCharDir('{'), NewCharDir('a'), NewCharDir('^'), NewLiteral(", "), NewCharDir('}')},
 			expectedRepeation: []repeatDef{repeatDef{index: 4, linksTo: 0}},
 		},
+		{
+			format:            "~2", //missing directive
+			expectedTokens:    expectErr("endofformat"),
+			expectedRepeation: []repeatDef{},
+		},
 	}
 
 	for _, tc := range tcs {
@@ -110,4 +116,8 @@ func buildGraph(tokens []ftoken, repeatDef []repeatDef) root {
 	}
 
 	return rootDir
+}
+
+func expectErr(code string) []ftoken {
+	return []ftoken{NewLiteral(generalError(errors.New(code)))}
 }
