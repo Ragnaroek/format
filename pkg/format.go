@@ -8,7 +8,7 @@ import (
 	"unicode"
 )
 
-var fgCache = make(map[string]root, 0)
+var fgCache = make(map[string]*root, 0)
 
 func Format(format string, a ...interface{}) {
 	print(Sformat(format, a...))
@@ -23,12 +23,18 @@ func Sformat(format string, a ...interface{}) string {
 	return applyFormat(fg, a...)
 }
 
-func applyFormat(root root, a ...interface{}) string {
+func applyFormat(root *root, a ...interface{}) string {
 	var result strings.Builder
 
-	node := root.Next()
 	argPtr := 0
-	for node != nil {
+	for _, node := range root.children {
+		//TODO if node is root {
+		//  for _, loopArg := range mustBeAIterable(a[argPtr])
+		//     s := applyFormat(node.GetRoot(), loopArg)
+		//     result.WriteString(s)
+		//  }
+		//}
+
 		var str string
 		if node.ConsumesArg() {
 			str = node.Format(a[argPtr], &result)
@@ -37,49 +43,55 @@ func applyFormat(root root, a ...interface{}) string {
 			str = node.Format(nil, &result)
 		}
 		result.WriteString(str)
-
-		node = node.Next()
 	}
 
 	return result.String()
 }
 
-func parseFormatGraph(format string) root {
+type recu struct {
+	dir  *directive //nil on toplevel
+	root *root
+}
+
+func parseFormatGraph(format string) *root {
 	runes := []rune(format)
-	var parenStack []*directive
-	rootDir := root{}
-	var curDirective ftoken = &rootDir
-	literalBuf := make([]rune, 0)
+
+	recuStack := []*recu{&recu{dir: nil, root: &root{}}}
+	headRecu := recuStack[0]
+
+	literalBuf := make([]rune, 0) //OPT: recycle this buffer instead of allocation a new one each time
+
 	for i := 0; i < len(runes); i++ {
 		if runes[i] == '~' {
 			if len(literalBuf) != 0 {
 				ltoken := literal{literal: string(literalBuf)}
 				literalBuf = make([]rune, 0)
-				curDirective.SetNext(&ltoken)
-				curDirective = &ltoken
+				headRecu.root.children = append(headRecu.root.children, &ltoken)
 			}
 			directive, skip, err := parseDirective(i, runes)
 			if err != nil {
 				return errDir(err)
 			}
 			i += skip
-			curDirective.SetNext(&directive)
-			curDirective = &directive
 
 			if directive.controlDef.repeatStart {
-				parenStack = append(parenStack, &directive)
-			}
-			if directive.controlDef.repeatEnd {
-				n := len(parenStack) - 1
+				newRecu := &recu{dir: &directive, root: &root{}}
+				recuStack = append(recuStack, newRecu)
+				headRecu = newRecu
+			} else if directive.controlDef.repeatEnd {
+				n := len(recuStack) - 1
 				if n < 0 {
 					return errDir(errors.New("nopeer"))
 				}
-				popped := parenStack[n]
-				parenStack = parenStack[:n] //pop
-				if directive.controlDef.peerChar != popped.char {
+				popped := recuStack[n]
+				recuStack = recuStack[:n] //pop
+				headRecu = recuStack[n-1]
+				if directive.controlDef.peerChar != popped.dir.char {
 					return errDir(errors.New("balancepeer"))
 				}
-				directive.SetRepeatRef(popped)
+				headRecu.root.children = append(headRecu.root.children, popped.root)
+			} else {
+				headRecu.root.children = append(headRecu.root.children, &directive)
 			}
 		} else {
 			literalBuf = append(literalBuf, runes[i]) //OPT: propably too slow
@@ -88,10 +100,14 @@ func parseFormatGraph(format string) root {
 
 	if len(literalBuf) != 0 {
 		ltoken := literal{literal: string(literalBuf)}
-		curDirective.SetNext(&ltoken)
-		curDirective = &ltoken
+		headRecu.root.children = append(headRecu.root.children, &ltoken)
 	}
-	return rootDir
+
+	if headRecu.dir != nil {
+		return errDir(errors.New("rootpeer"))
+	}
+
+	return headRecu.root
 }
 
 //~num|char_t[,num|char_t][:][@]char
@@ -219,59 +235,31 @@ func nextChar(i int, format []rune) (rune, error) {
 	return format[i], nil
 }
 
-func errDir(err error) root {
+func errDir(err error) *root {
 	r := root{}
-	r.SetNext(NewLiteral(generalError(err)))
-	return r
+	r.children = []ftoken{NewLiteral(generalError(err))}
+	return &r
 }
 
 type ftoken interface {
 	ConsumesArg() bool
-
-	Repeats() bool
-	RepeatRef() ftoken
-	SetRepeatRef(ftoken)
-
-	Next() ftoken
-	SetNext(ftoken)
-
 	Format(interface{}, *strings.Builder) string
 }
 
 type root struct {
-	next ftoken
+	children []ftoken
 }
 
 func (l *root) ConsumesArg() bool {
 	return false
 }
 
-func (l *root) Next() ftoken {
-	return l.next
-}
-
-func (l *root) SetNext(token ftoken) {
-	l.next = token
-}
-
 func (l *root) Format(_ interface{}, _ *strings.Builder) string {
 	return ""
 }
 
-func (l *root) Repeats() bool {
-	return false
-}
-
-func (l *root) RepeatRef() ftoken {
-	return nil
-}
-
-func (l *root) SetRepeatRef(_ ftoken) {
-}
-
 type literal struct {
 	literal string
-	next    ftoken
 }
 
 func NewLiteral(lit string) ftoken {
@@ -282,27 +270,8 @@ func (l *literal) ConsumesArg() bool {
 	return false
 }
 
-func (l *literal) Next() ftoken {
-	return l.next
-}
-
-func (l *literal) SetNext(token ftoken) {
-	l.next = token
-}
-
 func (l *literal) Format(_ interface{}, _ *strings.Builder) string {
 	return l.literal
-}
-
-func (l *literal) Repeats() bool {
-	return false
-}
-
-func (l *literal) RepeatRef() ftoken {
-	return nil
-}
-
-func (l *literal) SetRepeatRef(_ ftoken) {
 }
 
 type directive struct {
@@ -311,13 +280,7 @@ type directive struct {
 	atMod       bool
 	char        rune
 	next        ftoken
-	repeats     bool
-	repeatRef   ftoken
 	controlDef  *controlDef
-}
-
-func NewCharDir(char rune) ftoken {
-	return &directive{char: char}
 }
 
 type prefixParam struct {
@@ -326,30 +289,14 @@ type prefixParam struct {
 	empty     bool
 }
 
+func NewCharDir(char rune) ftoken {
+	return &directive{char: char}
+}
+
 func (l *directive) ConsumesArg() bool {
 	return l.controlDef.consumesArg
 }
 
-func (l *directive) Next() ftoken {
-	return l.next
-}
-
-func (l *directive) SetNext(token ftoken) {
-	l.next = token
-}
-
 func (l *directive) Format(arg interface{}, input *strings.Builder) string {
 	return l.controlDef.applyFn(arg, l, input)
-}
-
-func (l *directive) Repeats() bool {
-	return l.repeats
-}
-
-func (l *directive) RepeatRef() ftoken {
-	return l.repeatRef
-}
-
-func (l *directive) SetRepeatRef(token ftoken) {
-	l.repeatRef = token
 }

@@ -19,12 +19,12 @@ func init() {
 	AddControl(NewControlDef('b', applyB))
 	AddControl(NewControlDef('o', applyO))
 	AddControl(NewControlDef('x', applyX))
+	AddControl(NewControlDef('d', applyD))
 	AddControl(NewControlDef('f', applyF))
 
 	//Untested yet
 	AddRepeatingControl('{', '}')
 	AddControl(NewControlDef('a', applyA))
-	AddControl(NewControlDef('d', applyD))
 	AddControl(NewControlDef('^', applyCircumflex))
 
 }
@@ -49,7 +49,7 @@ func NewNoArgControlDef(char rune, fn ApplyFn) controlDef {
 	return controlDef{controlChar: char, applyFn: fn, consumesArg: false}
 }
 
-func AddRepeatingControl(startChar rune, endChar rune) {
+func AddRepeatingControl(startChar, endChar rune) {
 	AddControl(controlDef{controlChar: startChar, repeatStart: true, peerChar: endChar, consumesArg: true})
 	AddControl(controlDef{controlChar: endChar, repeatEnd: true, peerChar: startChar, consumesArg: true})
 }

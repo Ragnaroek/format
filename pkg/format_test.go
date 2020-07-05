@@ -9,65 +9,66 @@ import (
 func TestParseFormatGraph(t *testing.T) {
 	tcs := []struct {
 		format            string
-		expectedTokens    []ftoken
+		expectedToken     *root
 		expectedRepeation []repeatDef
 	}{
 		{
-			format:         "string only",
-			expectedTokens: []ftoken{NewLiteral("string only")},
+			format:        "string only",
+			expectedToken: &root{children: []ftoken{NewLiteral("string only")}},
 		},
 		{
-			format:         "~a",
-			expectedTokens: []ftoken{&directive{char: rune('a')}},
+			format:        "~a",
+			expectedToken: &root{children: []ftoken{fdir(directive{char: rune('a')})}},
 		},
 		{
-			format:         "~:a",
-			expectedTokens: []ftoken{&directive{char: rune('a'), colonMod: true}},
+			format:        "~:a",
+			expectedToken: &root{children: []ftoken{fdir(directive{char: rune('a'), colonMod: true})}},
 		},
 		{
-			format:         "~:@a",
-			expectedTokens: []ftoken{&directive{char: rune('a'), colonMod: true, atMod: true}},
+			format:        "~:@a",
+			expectedToken: &root{children: []ftoken{fdir(directive{char: rune('a'), colonMod: true, atMod: true})}},
 		},
 		{
-			format:         "~@:a",
-			expectedTokens: []ftoken{&directive{char: rune('a'), colonMod: true, atMod: true}},
+			format:        "~@:a",
+			expectedToken: &root{[]ftoken{fdir(directive{char: rune('a'), colonMod: true, atMod: true})}},
 		},
 		{
-			format:         "~12d",
-			expectedTokens: []ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}}}},
+			format:        "~12d",
+			expectedToken: &root{[]ftoken{fdir(directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}}})}},
 		},
 		{
-			format:         "~-12d",
-			expectedTokens: []ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: -12}}}},
+			format:        "~-12d",
+			expectedToken: &root{[]ftoken{fdir(directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: -12}}})}},
 		},
 		{
-			format:         "~+12d",
-			expectedTokens: []ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}}}},
+			format:        "~+12d",
+			expectedToken: &root{[]ftoken{fdir(directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}}})}},
 		},
 		{
-			format:         "~'0d",
-			expectedTokens: []ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{charParam: '0'}}}},
+			format:        "~'0d",
+			expectedToken: &root{[]ftoken{fdir(directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{charParam: '0'}}})}},
 		},
 		{
-			format:         "~12,'xd",
-			expectedTokens: []ftoken{&directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}, prefixParam{charParam: 'x'}}}},
+			format:        "~12,'xd",
+			expectedToken: &root{[]ftoken{fdir(directive{char: rune('d'), prefixParam: []prefixParam{prefixParam{numParam: 12}, prefixParam{charParam: 'x'}}})}},
 		},
 		{
-			format:         "~10,,,,2:@r",
-			expectedTokens: []ftoken{&directive{char: rune('r'), atMod: true, colonMod: true, prefixParam: []prefixParam{prefixParam{numParam: 10}, prefixParam{empty: true}, prefixParam{empty: true}, prefixParam{empty: true}, prefixParam{numParam: 2}}}},
+			format:        "~10,,,,2:@r",
+			expectedToken: &root{[]ftoken{fdir(directive{char: rune('r'), atMod: true, colonMod: true, prefixParam: []prefixParam{prefixParam{numParam: 10}, prefixParam{empty: true}, prefixParam{empty: true}, prefixParam{empty: true}, prefixParam{numParam: 2}}})}},
 		},
 		{
-			format:         "foo ~:a bar",
-			expectedTokens: []ftoken{NewLiteral("foo "), &directive{char: rune('a'), colonMod: true}, NewLiteral(" bar")},
+			format:        "foo ~:a bar",
+			expectedToken: &root{[]ftoken{NewLiteral("foo "), fdir(directive{char: rune('a'), colonMod: true}), NewLiteral(" bar")}},
 		},
 		{
 			format:            "~{~a~^, ~}",
-			expectedTokens:    []ftoken{NewCharDir('{'), NewCharDir('a'), NewCharDir('^'), NewLiteral(", "), NewCharDir('}')},
+			expectedToken:     &root{[]ftoken{&root{children: []ftoken{fdir(directive{char: 'a'}), fdir(directive{char: '^'}), NewLiteral(", ")}}}},
 			expectedRepeation: []repeatDef{repeatDef{index: 4, linksTo: 0}},
 		},
+		//err cases
 		{
 			format:            "~2", //missing directive
-			expectedTokens:    expectErr("endofformat"),
+			expectedToken:     expectErr("endofformat"),
 			expectedRepeation: []repeatDef{},
 		},
 	}
@@ -75,49 +76,42 @@ func TestParseFormatGraph(t *testing.T) {
 	for _, tc := range tcs {
 		t.Run(tc.format, func(t *testing.T) {
 			root := parseFormatGraph(tc.format)
-			var node ftoken = &root
-			var nodeExpected ftoken
-			graph := buildGraph(tc.expectedTokens, tc.expectedRepeation)
-			nodeExpected = &graph
-			if node == nil {
-				t.Errorf("node nil")
+
+			if len(root.children) != len(tc.expectedToken.children) {
+				t.Fatalf("expected %d children, got %d", len(tc.expectedToken.children), len(root.children))
 			}
 
-			var i = 0
-			for node.Next() != nil {
-				if !reflect.DeepEqual(nodeExpected, node) {
-					t.Errorf("expected %#v, actual %#v", nodeExpected, node)
-				}
-				node = node.Next()
-				nodeExpected = nodeExpected.Next()
-				i++
-			}
+			cmpToken(t, tc.expectedToken, root)
 		})
 	}
 }
 
-func buildGraph(tokens []ftoken, repeatDef []repeatDef) root {
-	rootDir := root{}
-	var curDir ftoken
-	curDir = &rootDir
-	for ix, token := range tokens {
-		dir, ok := token.(*directive)
-		if ok {
-			dir.controlDef = getControlDef(dir.char)
-		}
-		curDir.SetNext(token)
-		curDir = token
+func cmpToken(t *testing.T, nodeExpected, nodeActual ftoken) {
 
-		for _, repeat := range repeatDef {
-			if repeat.index == ix {
-				token.SetRepeatRef(tokens[repeat.linksTo])
-			}
+	rootActual, ok := nodeActual.(*root)
+	if ok {
+		rootExpected, okExp := nodeExpected.(*root)
+		if !okExp {
+			t.Errorf("actual is root node, but expected is not")
+		}
+
+		for i, nodeExpected := range rootExpected.children {
+			nodeActual := rootActual.children[i]
+			cmpToken(t, nodeExpected, nodeActual)
+		}
+	} else {
+		if !reflect.DeepEqual(nodeExpected, nodeActual) {
+			t.Errorf("\nexpected %#v,\ngot      %#v", nodeExpected, nodeActual)
 		}
 	}
-
-	return rootDir
 }
 
-func expectErr(code string) []ftoken {
-	return []ftoken{NewLiteral(generalError(errors.New(code)))}
+func fdir(directive directive) *directive {
+	cdef := getControlDef(directive.char)
+	directive.controlDef = cdef
+	return &directive
+}
+
+func expectErr(code string) *root {
+	return &root{children: []ftoken{NewLiteral(generalError(errors.New(code)))}}
 }

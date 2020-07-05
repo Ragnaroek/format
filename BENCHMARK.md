@@ -5,6 +5,17 @@ Run on:
 - Processor: 2,6 GHz 6-Core Intel Core i7
 - Memory: 32 GB 2400 MHz DDR4
 
+## Engine refactoring for recursive handling + float fixes
+BenchmarkFmtSimple-12       	18412630	        59.0 ns/op
+BenchmarkFmtLong-12         	 5016384	       235 ns/op
+BenchmarkFmtFloat-12        	 4191775	       293 ns/op
+BenchmarkFormatSimple-12    	17161602	        68.5 ns/op
+BenchmarkFormatLong-12      	 4237104	       286 ns/op
+BenchmarkFormatFloat-12     	 2731093	       429 ns/op
+==> FormatLong, FormatSimple profitted from the engine rewrite, Float performance got slower since
+    a lot of edge cases were missing before the fix (but more ifs are need to handle this)
+==> down to 16%, 22% for normal, 47% slower for float
+
 ## Floating point performance added
 BenchmarkFmtSimple-12       	18428300	        61.2 ns/op
 BenchmarkFmtLong-12         	 4870514	       250 ns/op

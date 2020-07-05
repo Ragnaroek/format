@@ -59,15 +59,18 @@ All other directives not mentioned in the table are not implemented yet.
 
 Implementing more directives.
 
-Optimisation! `format` is currently ~25% times slower than `fmt`:
+Optimisation! `format` is currently 16% to 22% times slower than `fmt` for the standard cases.
+Currently 47% slower in the float performance.
 ```
-BenchmarkFmtSimple-12       	18712560	        63.4 ns/op
-BenchmarkFmtLong-12         	 4741552	       263 ns/op
-BenchmarkFormatSimple-12    	14139633	        81.1 ns/op
-BenchmarkFormatLong-12      	 3741561	       318 ns/op
+BenchmarkFmtSimple-12       	18412630	        59.0 ns/op
+BenchmarkFmtLong-12         	 5016384	       235 ns/op
+BenchmarkFmtFloat-12        	 4191775	       293 ns/op
+BenchmarkFormatSimple-12    	17161602	        68.5 ns/op
+BenchmarkFormatLong-12      	 4237104	       286 ns/op
+BenchmarkFormatFloat-12     	 2731093	       429 ns/op
 ```
 
-You can run the benchmarks yourself with `make bench`.
+You can run the benchmarks yourself with `make bench`. A history of benchmark results is collected in `BENCHMARK.md`.
 
 # Thanks
 
