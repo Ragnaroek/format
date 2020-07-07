@@ -8,9 +8,8 @@ import (
 
 func TestParseFormatGraph(t *testing.T) {
 	tcs := []struct {
-		format            string
-		expectedToken     *root
-		expectedRepeation []repeatDef
+		format        string
+		expectedToken *root
 	}{
 		{
 			format:        "string only",
@@ -61,15 +60,21 @@ func TestParseFormatGraph(t *testing.T) {
 			expectedToken: &root{[]ftoken{NewLiteral("foo "), fdir(directive{char: rune('a'), colonMod: true}), NewLiteral(" bar")}},
 		},
 		{
-			format:            "~{~a~^, ~}",
-			expectedToken:     &root{[]ftoken{&root{children: []ftoken{fdir(directive{char: 'a'}), fdir(directive{char: '^'}), NewLiteral(", ")}}}},
-			expectedRepeation: []repeatDef{repeatDef{index: 4, linksTo: 0}},
+			format:        "~{~a~^, ~}",
+			expectedToken: &root{[]ftoken{&root{children: []ftoken{fdir(directive{char: 'a'}), fdir(directive{char: '^'}), NewLiteral(", ")}}}},
 		},
 		//err cases
 		{
-			format:            "~2", //missing directive
-			expectedToken:     expectErr("endofformat"),
-			expectedRepeation: []repeatDef{},
+			format:        "~2", //missing directive
+			expectedToken: expectErr("endofformat"),
+		},
+		{
+			format:        "~{", //unbalanced }
+			expectedToken: expectErr("rootpeer"),
+		},
+		{
+			format:        "~{~}~}", //unbalanced }
+			expectedToken: expectErr("nopeer"),
 		},
 	}
 
@@ -87,7 +92,6 @@ func TestParseFormatGraph(t *testing.T) {
 }
 
 func cmpToken(t *testing.T, nodeExpected, nodeActual ftoken) {
-
 	rootActual, ok := nodeActual.(*root)
 	if ok {
 		rootExpected, okExp := nodeExpected.(*root)

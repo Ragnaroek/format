@@ -3,6 +3,7 @@ package ft
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"unicode"
@@ -23,26 +24,33 @@ func Sformat(format string, a ...interface{}) string {
 	return applyFormat(fg, a...)
 }
 
-func applyFormat(root *root, a ...interface{}) string {
+func applyFormat(rootNode *root, a ...interface{}) string {
 	var result strings.Builder
 
 	argPtr := 0
-	for _, node := range root.children {
-		//TODO if node is root {
-		//  for _, loopArg := range mustBeAIterable(a[argPtr])
-		//     s := applyFormat(node.GetRoot(), loopArg)
-		//     result.WriteString(s)
-		//  }
-		//}
-
-		var str string
-		if node.ConsumesArg() {
-			str = node.Format(a[argPtr], &result)
+	for _, node := range rootNode.children {
+		root, isRoot := node.(*root)
+		if isRoot {
+			arg := a[argPtr]
+			v := reflect.ValueOf(arg)
+			if v.Kind() == reflect.Slice {
+				for i := 0; i < v.Len(); i++ {
+					result.WriteString(applyFormat(root, v.Index(i).Interface()))
+				}
+			} else {
+				result.WriteString(applyFormat(root, arg))
+			}
 			argPtr++
 		} else {
-			str = node.Format(nil, &result)
+			var str string
+			if node.ConsumesArg() {
+				str = node.Format(a[argPtr], &result)
+				argPtr++
+			} else {
+				str = node.Format(nil, &result)
+			}
+			result.WriteString(str)
 		}
-		result.WriteString(str)
 	}
 
 	return result.String()
@@ -80,7 +88,7 @@ func parseFormatGraph(format string) *root {
 				headRecu = newRecu
 			} else if directive.controlDef.repeatEnd {
 				n := len(recuStack) - 1
-				if n < 0 {
+				if n <= 0 { //there should alway be the top root node (that can't be popped)
 					return errDir(errors.New("nopeer"))
 				}
 				popped := recuStack[n]

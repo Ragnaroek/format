@@ -3,6 +3,10 @@ test:
 
 bench:
 	go test ./benchmarks/... -bench=.
+
+bench-profile:
+	go test ./benchmarks/... -bench=BenchmarkFormatLong -cpuprofile=cprof
+	go tool pprof --text cprof > cprof.txt
 	
 playground:
 	GOOS=js GOARCH=wasm go build -o playground/format.wasm cmd/playground/main.go

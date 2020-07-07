@@ -12,3 +12,5 @@
 *.out
 
 playground/format.wasm
+cprof
+cprof.txt

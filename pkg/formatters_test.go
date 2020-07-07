@@ -1268,6 +1268,16 @@ func Test_F(t *testing.T) {
 	runTests(t, tcs)
 }
 
+//~{ ~}
+func Test_Recursison(t *testing.T) {
+	tcs := []formatTest{
+		formatT("1 2 3 ", "~{~a ~}", []string{"1", "2", "3"}),
+		formatT("1 2 3 ", "~{~d ~}", []int{1, 2, 3}),
+		formatT("1 ", "~{~a ~}", "1"),
+	}
+	runTests(t, tcs)
+}
+
 func Test_A(t *testing.T) {
 	tcs := []formatTest{
 		formatT("Hello", "~a", "Hello"),
@@ -1286,11 +1296,6 @@ func runTests(t *testing.T, tests []formatTest) {
 			}
 		})
 	}
-}
-
-type repeatDef struct {
-	index   int
-	linksTo int
 }
 
 type formatTest struct {
