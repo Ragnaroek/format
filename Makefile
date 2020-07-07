@@ -5,7 +5,7 @@ bench:
 	go test ./benchmarks/... -bench=.
 
 bench-profile:
-	go test ./benchmarks/... -bench=BenchmarkFormatLong -cpuprofile=cprof
+	go test ./benchmarks/... -bench=BenchmarkFormatFloat -cpuprofile=cprof
 	go tool pprof --text cprof > cprof.txt
 	
 playground:

@@ -49,7 +49,7 @@ The directives listed below are already implemented:
 |[~o](http://www.lispworks.com/documentation/HyperSpec/Body/22_cbd.htm)|Octal|mincol, padchar, comma-char, comma-interval|
 |[~x](http://www.lispworks.com/documentation/HyperSpec/Body/22_cbe.htm)|Hexadecimal|mincol, padchar, comma-char, comma-interval|
 |[~f](http://www.lispworks.com/documentation/HyperSpec/Body/22_cca.htm)|Float|width, decimals, scale, overflow, pad||Sign|||
-
+[~{ ~}](http://www.lispworks.com/documentation/HyperSpec/Body/22_cgd.htm)|Iteration|||||: and @ not yet implemented|
 
 This table is derived from https://www.hexstreamsoft.com/articles/common-lisp-format-reference/clhs-summary/#subsections-summary-table, which was also a great help in the implementation of the directives so far. Many thanks to Jean-Philippe Paradis.
 
