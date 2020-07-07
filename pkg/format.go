@@ -1,6 +1,7 @@
 package ft
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"reflect"
@@ -67,13 +68,13 @@ func parseFormatGraph(format string) *root {
 	recuStack := []*recu{&recu{dir: nil, root: &root{}}}
 	headRecu := recuStack[0]
 
-	literalBuf := make([]rune, 0) //OPT: recycle this buffer instead of allocation a new one each time
+	var literalBuf bytes.Buffer
 
 	for i := 0; i < len(runes); i++ {
 		if runes[i] == '~' {
-			if len(literalBuf) != 0 {
-				ltoken := literal{literal: string(literalBuf)}
-				literalBuf = make([]rune, 0)
+			if literalBuf.Len() != 0 {
+				ltoken := literal{literal: string(literalBuf.Bytes())}
+				literalBuf.Reset()
 				headRecu.root.children = append(headRecu.root.children, &ltoken)
 			}
 			directive, skip, err := parseDirective(i, runes)
@@ -102,12 +103,12 @@ func parseFormatGraph(format string) *root {
 				headRecu.root.children = append(headRecu.root.children, &directive)
 			}
 		} else {
-			literalBuf = append(literalBuf, runes[i]) //OPT: propably too slow
+			literalBuf.WriteRune(runes[i])
 		}
 	}
 
-	if len(literalBuf) != 0 {
-		ltoken := literal{literal: string(literalBuf)}
+	if literalBuf.Len() != 0 {
+		ltoken := literal{literal: string(literalBuf.Bytes())}
 		headRecu.root.children = append(headRecu.root.children, &ltoken)
 	}
 
